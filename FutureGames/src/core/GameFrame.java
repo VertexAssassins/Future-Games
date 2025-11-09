@@ -7,7 +7,10 @@ public class GameFrame extends JFrame {
         setTitle("Future Games");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        add(new GamePanel());
+
+        StartScreen startScreen = new StartScreen(this);
+        add(startScreen);
+
         pack();
         setLocationRelativeTo(null);
         setVisible(true);

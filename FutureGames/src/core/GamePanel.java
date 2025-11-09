@@ -28,10 +28,10 @@ public class GamePanel extends JPanel {
 
         Timer waveStartTimer = new Timer(3000, e -> {
             List<Wave.SpawnRequest> requests = List.of(
-                new Wave.SpawnRequest(FastEnemy.class, 100),
+                new Wave.SpawnRequest(FastEnemy.class, 10000),
                 new Wave.SpawnRequest(TankEnemy.class, 10)
             );
-        waveManager.startWave(new Wave(requests, 0.000001)); // 0.5s per enemy → 30 enemies over 15s
+        waveManager.startWave(new Wave(requests, 0.0001)); // 0.5s per enemy → 30 enemies over 15s
         });
         waveStartTimer.setRepeats(false);
         waveStartTimer.start();

@@ -1,12 +1,16 @@
 package entities;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import utils.Constants;
 
 public class Player {
     private double x = 300, y = 200;
-    private final int size = 40;
+    private final int size = 80;
 
     // Base stats
     private double baseSpeed = 4.0;
@@ -23,8 +27,18 @@ public class Player {
     // Movement
     private boolean up, down, left, right;
 
+    private BufferedImage sprite;
+
     public Player() {
         applyModifiers(1.0, 1.0); // default: no modifiers
+
+        try {
+            sprite = ImageIO.read(getClass().getResource("/assets/player/handgun/player.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            // fallback: keep rectangle
+            sprite = null;
+        }
     }
 
     public void applyModifiers(double speedMult, double healthMult) {
@@ -76,12 +90,12 @@ public class Player {
         int drawX = Constants.SCREEN_WIDTH / 2;
         int drawY = Constants.SCREEN_HEIGHT / 2;
 
-        if(System.currentTimeMillis() - lastHitTime > 100) {
-            color = Color.GREEN; // revert to green after brief period
+        if (sprite != null) {
+            g.drawImage(sprite, drawX - size / 2, drawY - size / 2, size, size, null);
+        } else {
+            g.setColor(color);
+            g.fillRect(drawX - size / 2, drawY - size / 2, size, size);
         }
-
-        g.setColor(color);
-        g.fillRect(drawX, drawY, size, size);
     }
 
     public void setDirection(String key, boolean pressed) {
