@@ -7,7 +7,11 @@ import java.util.Map;
 
 import javax.swing.*;
 import entities.Player;
+import entities.Projectile;
 import entities.Enemy;
+import weapons.Weapon;
+
+import java.awt.Point;
 
 public class GameLoop extends Thread {
     private static final int TARGET_FPS = 60;
@@ -46,6 +50,13 @@ public class GameLoop extends Thread {
             for (Enemy enemy : enemies) {
                 enemy.update(player);
                 enemy.attemptAttack(player);
+            }
+
+            panel.getCurrentWeapon().update();
+
+            // Shoot automatically while mouse is held
+            if (panel.isMouseDown()) {
+                panel.attemptShoot();
             }
 
             // --- Grid-based collision ---
@@ -96,6 +107,16 @@ public class GameLoop extends Thread {
                     }
                 }
             }
+
+            synchronized (panel.getProjectiles()) { // make sure you provide a getter for projectiles
+            for (int i = panel.getProjectiles().size() - 1; i >= 0; i--) {
+                Projectile p = panel.getProjectiles().get(i);
+                boolean alive = p.update(enemies); // returns false if it hits an enemy or exceeds range
+                if (!alive) {
+                    panel.getProjectiles().remove(i);
+                }
+            }
+        }
 
             delta--;
         }
