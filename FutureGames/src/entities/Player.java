@@ -13,7 +13,7 @@ public class Player {
     private double baseHealth = 100.0;
 
     private long lastHitTime = 0;
-    private long damageCooldown = 500; // milliseconds
+    private long damageCooldown = 100; // milliseconds
     private Color color = Color.GREEN;
 
     //Effective stats

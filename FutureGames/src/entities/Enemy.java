@@ -63,7 +63,7 @@ protected double worldX, worldY;
                 player.takeDamage(damage);
                 lastBurstTime = now;
                 burstRemaining--;
-                System.out.println("Enemy burst hit! Player health: " + player.getHealth());
+                //System.out.println("Enemy burst hit! Player health: " + player.getHealth());
             }
 
             if (burstRemaining == 0 && now - lastAttackCycleTime >= attackCooldown) {

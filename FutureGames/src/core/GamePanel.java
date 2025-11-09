@@ -19,6 +19,7 @@ public class GamePanel extends JPanel {
     private final WaveManager waveManager = new WaveManager(enemies, player);
 
     public GamePanel() {
+        setDoubleBuffered(true);
         setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -27,10 +28,10 @@ public class GamePanel extends JPanel {
 
         Timer waveStartTimer = new Timer(3000, e -> {
             List<Wave.SpawnRequest> requests = List.of(
-                new Wave.SpawnRequest(FastEnemy.class, 20),
+                new Wave.SpawnRequest(FastEnemy.class, 100),
                 new Wave.SpawnRequest(TankEnemy.class, 10)
             );
-        waveManager.startWave(new Wave(requests, 0.5)); // 0.5s per enemy → 30 enemies over 15s
+        waveManager.startWave(new Wave(requests, 0.000001)); // 0.5s per enemy → 30 enemies over 15s
         });
         waveStartTimer.setRepeats(false);
         waveStartTimer.start();
@@ -39,9 +40,12 @@ public class GamePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        for (Enemy enemy : enemies) {
-            enemy.update(player);
-            enemy.draw(g, camera);
+
+        synchronized (enemies) {
+            for (Enemy enemy : enemies) {
+                enemy.update(player);
+                enemy.draw(g, camera);
+            }
         }
         player.draw(g, camera);
     }
