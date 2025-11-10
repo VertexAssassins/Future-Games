@@ -9,7 +9,7 @@ import javax.swing.*;
 import entities.Player;
 import entities.Projectile;
 import entities.Enemy;
-import weapons.Weapon;
+import weapons.WeaponManager;
 
 import java.awt.Point;
 
@@ -52,11 +52,12 @@ public class GameLoop extends Thread {
                 enemy.attemptAttack(player);
             }
 
-            panel.getCurrentWeapon().update();
+            panel.getWeaponManager().update();
 
             // Shoot automatically while mouse is held
             if (panel.isMouseDown()) {
-                panel.attemptShoot();
+                double angle = panel.getAimAngle();
+                panel.getWeaponManager().tryShoot(player.getX(), player.getY(), angle);
             }
 
             // --- Grid-based collision ---

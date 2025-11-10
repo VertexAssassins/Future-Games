@@ -11,11 +11,11 @@ import entities.Player;
 import entities.TankEnemy;
 import entities.Projectile;
 import input.KeyBindings;
-import utils.Constants;
 import weapons.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class GamePanel extends JPanel {
     private final Player player = new Player();
@@ -23,17 +23,26 @@ public class GamePanel extends JPanel {
     private final List<Enemy> enemies = new ArrayList<>();
     private final WaveManager waveManager = new WaveManager(enemies, player);
     private final List<Projectile> projectiles = new ArrayList<>();
-    private final Handgun handgun = new Handgun();
-    private final SMG smg = new SMG();
-    private final PumpShotgun shotgun = new PumpShotgun();
-    private Weapon currentWeapon = handgun;
     private boolean mouseDown = false;
-
     private Point mousePos = new Point(0, 0);
-
-    public Weapon getCurrentWeapon() { return currentWeapon; }
     public boolean isMouseDown() { return mouseDown; }
     public Point getMousePos() { return mousePos; }
+    public WeaponManager getWeaponManager() { return weaponManager; }
+
+    public double getAimAngle() {
+    double worldMouseX = mousePos.x + camera.getOffsetX();
+    double worldMouseY = mousePos.y + camera.getOffsetY();
+    return Math.atan2(worldMouseY - player.getY(), worldMouseX - player.getX());
+    }
+
+    private final WeaponManager weaponManager = new WeaponManager(
+        Map.of(
+            WeaponType.HANDGUN, new Handgun(this::spawnProjectile),
+            WeaponType.SMG, new SMG(this::spawnProjectile),
+            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile)
+        ),
+        WeaponType.HANDGUN
+    );
 
     public GamePanel() {
         setDoubleBuffered(true);
@@ -42,10 +51,10 @@ public class GamePanel extends JPanel {
         setFocusable(true);
         KeyBindings.setup(this, player, index -> {
             switch (index) {
-                case 0 -> currentWeapon = handgun;
-                case 1 -> currentWeapon = smg;
-                case 2 -> currentWeapon = shotgun;
-            } 
+                case 0 -> weaponManager.switchTo(WeaponType.HANDGUN);
+                case 1 -> weaponManager.switchTo(WeaponType.SMG);
+                case 2 -> weaponManager.switchTo(WeaponType.SHOTGUN);
+            }
         });
         new GameLoop(this, player, enemies, waveManager).start();
 
@@ -68,51 +77,38 @@ public class GamePanel extends JPanel {
 
         // Track mouse for aiming
         addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
+        @Override
             public void mouseMoved(MouseEvent e) {
+                mousePos = e.getPoint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
                 mousePos = e.getPoint();
             }
         });
 
         Timer waveStartTimer = new Timer(3000, e -> {
             List<Wave.SpawnRequest> requests = List.of(
-                new Wave.SpawnRequest(FastEnemy.class, 0),
+                new Wave.SpawnRequest(FastEnemy.class, 1000),
                 new Wave.SpawnRequest(TankEnemy.class, 0)
             );
-        waveManager.startWave(new Wave(requests, 0.0001)); // 0.5s per enemy → 30 enemies over 15s
+        waveManager.startWave(new Wave(requests, 0.001)); // 0.5s per enemy → 30 enemies over 15s
         });
         waveStartTimer.setRepeats(false);
         waveStartTimer.start();
     }
 
     public void attemptShoot() {
-        if (!mouseDown) return; // only fire if mouse is held
+    if (!mouseDown) return;
 
-        Weapon weapon = currentWeapon;
-        if (weapon.tryFire(0, 0, mousePos)) { // 0,0 because player is center of panel for aiming
-            // Angle from panel center (player) to current mouse position
-            double angle = Math.atan2(mousePos.y - (getHeight() / 2.0),
-                                    mousePos.x - (getWidth() / 2.0));
+    double angle = getAimAngle();
+    weaponManager.tryShoot(player.getX(), player.getY(), angle);
+    }
 
-            if (weapon instanceof PumpShotgun) {
-                int pellets = 6;
-                for (int i = 0; i < pellets; i++) {
-                    double pelletAngle = angle + Math.toRadians((Math.random() - 0.5) * weapon.getSpread());
-                    synchronized (projectiles) {
-                        projectiles.add(new Projectile(player.getX(), player.getY(), pelletAngle,
-                                                    weapon.getProjectileSpeed(),
-                                                    weapon.getRange(),
-                                                    weapon.getDamage()));
-                    }
-                }
-            } else {
-                synchronized (projectiles) {
-                    projectiles.add(new Projectile(player.getX(), player.getY(), angle,
-                                                weapon.getProjectileSpeed(),
-                                                weapon.getRange(),
-                                                weapon.getDamage()));
-                }
-            }
+    public void spawnProjectile(Projectile p) {
+        synchronized (projectiles) {
+            projectiles.add(p);
         }
     }
 
