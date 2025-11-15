@@ -7,7 +7,7 @@ public class FastEnemy extends Enemy {
         super(worldX, worldY);
         baseSpeed = 1.5;
         baseDamage = 5.0;
-        baseHealth = 50.0;
+        baseHealth = 20.0;
         baseAttackCooldown = 800;
         burstCount = 1;
         burstInterval = 150;

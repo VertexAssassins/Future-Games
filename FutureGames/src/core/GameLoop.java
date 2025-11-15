@@ -5,13 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.*;
 import entities.Player;
 import entities.Projectile;
 import entities.Enemy;
-import weapons.WeaponManager;
-
-import java.awt.Point;
 
 public class GameLoop extends Thread {
     private static final int TARGET_FPS = 60;
@@ -42,6 +38,10 @@ public class GameLoop extends Thread {
             long now = System.nanoTime();
             delta += (now - lastTime) / nsPerFrame;
             lastTime = now;
+
+            if (!player.isAlive() && panel.getGameState() == GameState.PLAYING) {
+                panel.setGameState(GameState.GAME_OVER);
+            }
 
             while(delta >= 1) {
             player.update();
@@ -118,6 +118,18 @@ public class GameLoop extends Thread {
                 }
             }
         }
+
+           for (Enemy e : enemies) {
+                if (!e.isAlive()) {
+                    e.onDeath();
+                }
+            }
+            enemies.removeIf(e -> !e.isAlive());
+
+            // Advance wave if all enemies are dead and no wave is active
+            if (panel.getGameState() == GameState.PLAYING && enemies.isEmpty() && !waveManager.isWaveActive()) {
+                waveManager.advanceWave();
+            }
 
             delta--;
         }

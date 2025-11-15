@@ -1,8 +1,12 @@
 package input;
 
 import javax.swing.*;
+
+import core.GameState;
+
 import java.awt.event.ActionEvent;
 import entities.Player;
+import input.KeyBindings.WeaponSwitcher;
 
 public class KeyBindings {
     public static void setup(JPanel panel, Player player, WeaponSwitcher weaponSwitcher) {

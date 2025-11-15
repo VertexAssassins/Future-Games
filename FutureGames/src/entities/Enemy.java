@@ -32,7 +32,7 @@ protected double worldX, worldY;
     // Visuals
     protected int size = 40;
     protected Color color = Color.MAGENTA;
-    protected double colliderRadius = size / 2.0;
+    protected double colliderRadius = size * .75;
 
     public double getX() { return worldX; }
     public double getY() { return worldY; }
@@ -112,6 +112,10 @@ protected double worldX, worldY;
                 int drawX = (int)(wrappedX - camera.getOffsetX());
                 int drawY = (int)(wrappedY - camera.getOffsetY());
 
+                g.setColor(Color.RED);
+                int r = (int) getColliderRadius();
+                g.drawOval(drawX + size / 2 - r, drawY + size / 2 - r, r * 2, r * 2);
+
                 g.setColor(color);
                 g.fillRect(drawX, drawY, size, size);
             }
@@ -132,5 +136,10 @@ protected double worldX, worldY;
 
     public boolean isAlive() {
         return health > 0;
+    }
+
+    public void onDeath() {
+    // Placeholder for future effects
+    System.out.println("Enemy died at (" + worldX + ", " + worldY + ")");
     }
 }

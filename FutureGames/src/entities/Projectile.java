@@ -12,7 +12,7 @@ public class Projectile {
     private final double damage;
     private double traveled = 0;
 
-    private final int size = 4; // simple circle for now
+    private final int size = 15; // simple circle for now
 
     public Projectile(double x, double y, double angle, double speed, double range, double damage) {
         this.x = x;
@@ -34,8 +34,9 @@ public class Projectile {
         // Check collisions
         for (Enemy e : enemies) {
             double distSq = (e.getX() - x)*(e.getX() - x) + (e.getY() - y)*(e.getY() - y);
-            double radius = e.getColliderRadius();
-            if (distSq <= radius*radius) {
+            double hitBuffer = 4.0;
+            double combinedRadius = e.getColliderRadius() + size / 2 + hitBuffer;
+            if (distSq <= combinedRadius * combinedRadius) {
                 e.takeDamage(damage);
                 return false; // projectile disappears on hit
             }

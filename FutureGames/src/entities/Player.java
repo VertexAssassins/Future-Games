@@ -41,6 +41,11 @@ public class Player {
         }
     }
 
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public void applyModifiers(double speedMult, double healthMult) {
         speed = baseSpeed * speedMult;
         health = baseHealth * healthMult;

@@ -7,7 +7,7 @@ public class TankEnemy extends Enemy {
         super(worldX, worldY);
         baseSpeed = .8;
         baseDamage = 2.5;
-        baseHealth = 2.0;
+        baseHealth = 100.0;
         baseAttackCooldown = 1200;
         burstCount = 2;
         size = 60;

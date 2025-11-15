@@ -6,9 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import entities.Enemy;
-import entities.FastEnemy;
 import entities.Player;
-import entities.TankEnemy;
 import entities.Projectile;
 import input.KeyBindings;
 import weapons.*;
@@ -23,11 +21,21 @@ public class GamePanel extends JPanel {
     private final List<Enemy> enemies = new ArrayList<>();
     private final WaveManager waveManager = new WaveManager(enemies, player);
     private final List<Projectile> projectiles = new ArrayList<>();
+    private GameState gameState = GameState.PLAYING;
+    private Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
     private boolean mouseDown = false;
     private Point mousePos = new Point(0, 0);
     public boolean isMouseDown() { return mouseDown; }
     public Point getMousePos() { return mousePos; }
     public WeaponManager getWeaponManager() { return weaponManager; }
+
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameState state) {
+        this.gameState = state;
+    }
 
     public double getAimAngle() {
     double worldMouseX = mousePos.x + camera.getOffsetX();
@@ -64,6 +72,10 @@ public class GamePanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     mouseDown = true;
+
+                    if (gameState == GameState.GAME_OVER && retryButton.contains(e.getPoint())) {
+                        resetGame();
+                    }
                 }
             }
 
@@ -87,16 +99,6 @@ public class GamePanel extends JPanel {
                 mousePos = e.getPoint();
             }
         });
-
-        Timer waveStartTimer = new Timer(3000, e -> {
-            List<Wave.SpawnRequest> requests = List.of(
-                new Wave.SpawnRequest(FastEnemy.class, 1000),
-                new Wave.SpawnRequest(TankEnemy.class, 0)
-            );
-        waveManager.startWave(new Wave(requests, 0.001)); // 0.5s per enemy → 30 enemies over 15s
-        });
-        waveStartTimer.setRepeats(false);
-        waveStartTimer.start();
     }
 
     public void attemptShoot() {
@@ -132,10 +134,54 @@ public class GamePanel extends JPanel {
                 enemy.draw(g, camera);
             }
         }
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Wave: " + waveManager.getWaveNumber(), getWidth() - 120, 30);
+
+        if (gameState == GameState.GAME_OVER) {
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 48));
+            g.drawString("Game Over", getWidth() / 2 - 150, getHeight() / 2 - 80);
+
+            // Draw retry button
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(retryButton.x, retryButton.y, retryButton.width, retryButton.height);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 24));
+            g.drawString("Retry", retryButton.x + 65, retryButton.y + 32);
+        }
+
+        retryButton = new Rectangle(getWidth() / 2 - 100, getHeight() / 2, 200, 50);
     }
 
     public List<Projectile> getProjectiles() {
     return projectiles;
     }
 
+    public void resetGame() {
+        // Reset game state
+        gameState = GameState.PLAYING;
+
+        // Reinitialize player
+        player.applyModifiers(1.0, 1.0); // reset stats
+        player.setPosition(300, 200);   // or your spawn point
+        // Optionally reset movement flags if needed
+
+        // Clear enemies and projectiles
+        synchronized (enemies) {
+            enemies.clear();
+        }
+        synchronized (projectiles) {
+            projectiles.clear();
+        }
+
+        // Reset weapon manager
+        weaponManager.switchTo(WeaponType.HANDGUN);
+        weaponManager.getCurrent().reload(); // optional
+
+        // Reset wave manager
+        waveManager.reset(); // implement this method in WaveManager
+        waveManager.advanceWave();
+    }
 }

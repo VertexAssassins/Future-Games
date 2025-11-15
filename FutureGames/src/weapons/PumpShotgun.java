@@ -4,7 +4,7 @@ import entities.Projectile;
 public class PumpShotgun extends Weapon {
 
     public PumpShotgun(ProjectileSpawner spawner) {
-        super(new WeaponStats(8, 30, 400, 50, 1, 2, 2500), spawner);
+        super(new WeaponStats(8, 30, 400, 15, 1, 2, 2500), spawner);
     }
 
     @Override
