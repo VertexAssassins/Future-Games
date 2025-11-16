@@ -51,7 +51,7 @@ public class Wave {
         for (SpawnRequest request : spawnRequests) {
             if (request.getCount() > 0) {
                 try {
-                    double[] coords = getSafeSpawnCoordinates(player);
+                    double[] coords = getRandomSpawnCoordinates(player);
                     Enemy enemy = request.getType()
                         .getConstructor(double.class, double.class)
                         .newInstance(coords[0], coords[1]);
@@ -66,36 +66,18 @@ public class Wave {
         return null;
     }
 
-    private double[] getSafeSpawnCoordinates(Player player) {
-    double px = player.getX();
-    double py = player.getY();
-    double safeDistance = 300;
+    private double[] getRandomSpawnCoordinates(Player player) {
+        double safeDistance = 800; // optional: avoid spawning too close
+        double px = player.getX();
+        double py = player.getY();
 
-    double x = 0, y = 0;
-    double distance = 0;
-    int attempts = 0;
+        double x, y;
+        double distance = 0;
+        int attempts = 0;
 
         do {
-            int edge = (int)(Math.random() * 4); // 0=top, 1=bottom, 2=left, 3=right
-
-            switch (edge) {
-                case 0 -> { // top
-                    x = Math.random() * Constants.MAP_WIDTH;
-                    y = -100;
-                }
-                case 1 -> { // bottom
-                    x = Math.random() * Constants.MAP_WIDTH;
-                    y = Constants.MAP_HEIGHT + 100;
-                }
-                case 2 -> { // left
-                    x = -100;
-                    y = Math.random() * Constants.MAP_HEIGHT;
-                }
-                case 3 -> { // right
-                    x = Constants.MAP_WIDTH + 100;
-                    y = Math.random() * Constants.MAP_HEIGHT;
-                }
-            }
+            x = Math.random() * Constants.MAP_WIDTH;
+            y = Math.random() * Constants.MAP_HEIGHT;
 
             double dx = x - px;
             double dy = y - py;
@@ -105,7 +87,7 @@ public class Wave {
             if (attempts > 10) break;
         } while (distance < safeDistance);
 
-    return new double[] { x, y };
+        return new double[] { x, y };
     }
 
     public boolean isFinished() {

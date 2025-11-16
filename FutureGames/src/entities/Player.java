@@ -19,7 +19,7 @@ public class Player {
 
     // Base stats
     private double baseSpeed = 4.0;
-    private double baseHealth = 100.0;
+    private double baseHealth = 10000000.0;
 
     private long lastHitTime = 0;
     private long damageCooldown = 100; // milliseconds
@@ -31,6 +31,14 @@ public class Player {
 
     // Movement
     private boolean up, down, left, right;
+
+    private boolean isDashing = false;
+    private long dashStartTime = 0;
+    private final long dashDuration = 200; // milliseconds
+    private final double dashSpeed = 25.0;
+    private double dashVX = 0;
+    private double dashVY = 0;
+    private double dashDecay = 0.85; // how quickly dash slows down
 
     private double knockbackVX = 0;
     private double knockbackVY = 0;
@@ -54,6 +62,46 @@ public class Player {
         this.x = x;
         this.y = y;
     }
+
+    public void startDash() {
+        if (!isDashing) {
+            double dx = getMovementX();
+            double dy = getMovementY();
+            double length = Math.sqrt(dx * dx + dy * dy);
+            if (length == 0) return; // no direction input
+
+            dx /= length;
+            dy /= length;
+
+            dashVX = dx * dashSpeed;
+            dashVY = dy * dashSpeed;
+
+            if (Math.abs(dashVX) < 0.05) dashVX = 0;
+            if (Math.abs(dashVY) < 0.05) dashVY = 0;
+
+            isDashing = true;
+            dashStartTime = System.currentTimeMillis();
+        }
+    }
+
+    public boolean isDashing() {
+        return isDashing;
+    }
+
+    private double getMovementX() {
+        double dx = 0;
+        if (left) dx -= 1;
+        if (right) dx += 1;
+        return dx;
+    }
+
+    private double getMovementY() {
+        double dy = 0;
+        if (up) dy -= 1;
+        if (down) dy += 1;
+        return dy;
+    }
+
 
     public void applyModifiers(double speedMult, double healthMult) {
         speed = baseSpeed * speedMult;
@@ -82,6 +130,21 @@ public class Player {
     public double getHealth() { return health; }
 
     public void update() {
+        if (isDashing) {
+            long now = System.currentTimeMillis();
+            if (now - dashStartTime >= dashDuration) {
+                isDashing = false;
+                dashVX = 0;
+                dashVY = 0;
+            } else {
+                x += dashVX;
+                y += dashVY;
+                dashVX *= dashDecay;
+                dashVY *= dashDecay;
+                return;
+            }
+        }
+
         int dx = 0, dy = 0;
         if (up) dy -= 1;
         if (down) dy += 1;

@@ -2,11 +2,8 @@ package input;
 
 import javax.swing.*;
 
-import core.GameState;
-
 import java.awt.event.ActionEvent;
 import entities.Player;
-import input.KeyBindings.WeaponSwitcher;
 
 public class KeyBindings {
     public static void setup(JPanel panel, Player player, WeaponSwitcher weaponSwitcher) {
@@ -30,6 +27,14 @@ public class KeyBindings {
                 }
             });
         }
+
+        // Dash key (Space)
+        im.put(KeyStroke.getKeyStroke("pressed SPACE"), "dash");
+        am.put("dash", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                player.startDash(); // You’ll define this in Player
+            }
+        });
 
         // Weapon switching keys — **moved inside the setup() method**
         String[] weaponKeys = {"1", "2", "3"};
