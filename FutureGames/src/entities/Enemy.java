@@ -96,13 +96,13 @@ protected BufferedImage sprite;
     this.worldY = y;
     }
 
-    public void update(Player player) {
+    public void updateMovement(Player player) {
         double dx = getWrappedDelta(player.getX(), worldX, Constants.MAP_WIDTH);
         double dy = getWrappedDelta(player.getY(), worldY, Constants.MAP_HEIGHT);
 
         if (hitOverlayAlpha > 0f) {
             hitOverlayAlpha -= overlayFadeSpeed;
-        if (hitOverlayAlpha < 0f) hitOverlayAlpha = 0f;
+            if (hitOverlayAlpha < 0f) hitOverlayAlpha = 0f;
         }
 
         if (dx != 0 || dy != 0) {
@@ -114,6 +114,11 @@ protected BufferedImage sprite;
             worldY += (normY * speed);
         }
 
+        worldX = WorldManager.wrapX(worldX);
+        worldY = WorldManager.wrapY(worldY);
+    }
+
+    public void applyKnockbackMovement() {
         worldX += knockbackVX;
         worldY += knockbackVY;
 

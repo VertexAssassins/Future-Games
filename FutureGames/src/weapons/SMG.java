@@ -3,7 +3,7 @@ import entities.Projectile;
 
 public class SMG extends Weapon {
     public SMG(ProjectileSpawner spawner) {
-        super(new WeaponStats(5, 15, 1200, 20, 10, 30, 1500), spawner);
+        super(new WeaponStats(5, 15, 600, 15, 10, 30, 1500), spawner);
     }
 
     @Override

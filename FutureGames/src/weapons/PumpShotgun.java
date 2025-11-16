@@ -4,7 +4,7 @@ import entities.Projectile;
 public class PumpShotgun extends Weapon {
 
     public PumpShotgun(ProjectileSpawner spawner) {
-        super(new WeaponStats(8, 30, 1200, 15, 1, 2, 2500), spawner);
+        super(new WeaponStats(8, 30, 400, 10, 1, 2, 2500), spawner);
     }
 
     @Override
@@ -12,7 +12,7 @@ public class PumpShotgun extends Weapon {
         double offset = 10.0;
         double spawnX = x + Math.cos(angle) * offset;
         double spawnY = y + Math.sin(angle) * offset;
-        
+
         int pellets = 6;
         for (int i = 0; i < pellets; i++) {
             double pelletAngle = angle + Math.toRadians((Math.random() - 0.5) * stats.spread);

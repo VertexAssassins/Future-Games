@@ -3,6 +3,10 @@ package entities;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.util.List;
+import java.awt.Rectangle;
+import utils.Quadtree;
+
+import utils.CollisionResolver;
 
 public class Projectile {
     private double x, y;
@@ -14,6 +18,10 @@ public class Projectile {
 
     private final int size = 15; // simple circle for now
 
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getRadius() { return size * .6; }
+
     public Projectile(double x, double y, double angle, double speed, double range, double damage) {
         this.x = x;
         this.y = y;
@@ -23,11 +31,32 @@ public class Projectile {
         this.damage = damage;
     }
 
-    public boolean update(List<Enemy> enemies) {
+    public Rectangle getSweptAABB(double dx, double dy) {
+        double minX = Math.min(x, x + dx) - getRadius();
+        double minY = Math.min(y, y + dy) - getRadius();
+        double width = Math.abs(dx) + getRadius() * 2;
+        double height = Math.abs(dy) + getRadius() * 2;
+
+        return new Rectangle((int)minX, (int)minY, (int)width, (int)height);
+    }
+
+    public boolean update(List<Enemy> enemies, Quadtree quadtree) {
         double dx = Math.cos(angle) * speed;
         double dy = Math.sin(angle) * speed;
+        Rectangle sweepBox = getSweptAABB(dx, dy);
+        List<Enemy> candidates = quadtree.query(sweepBox); // You’ll need access to the quadtree here
 
-        int steps = Math.max(4, (int)(speed / 1.5));
+        // Initial overlap check
+        for (Enemy e : candidates) {
+            if (CollisionResolver.checkInitialOverlap(this, e)) {
+                e.takeDamage(damage);
+                e.applyKnockback(x, y, damage, e.getHealth() + damage);
+                return false;
+            }
+        }
+
+        double maxRadius = getMaxEnemyRadius(candidates);
+        int steps = Math.max(6, (int)(speed / (maxRadius * 0.5)));
         double stepDx = dx / steps;
         double stepDy = dy / steps;
 
@@ -35,12 +64,8 @@ public class Projectile {
             double nextX = x + stepDx;
             double nextY = y + stepDy;
 
-            for (Enemy e : enemies) {
-                double ex = e.getCenterX();
-                double ey = e.getCenterY();
-                double radius = e.getColliderRadius() + size / 2 + 6.0;
-
-                if (intersectsCircle(x, y, nextX, nextY, ex, ey, radius)) {
+            for (Enemy e : candidates) {
+                if (CollisionResolver.checkProjectileHit(this, e, x, y, nextX, nextY)) {
                     e.takeDamage(damage);
                     e.applyKnockback(x, y, damage, e.getHealth() + damage);
                     return false;
@@ -50,35 +75,32 @@ public class Projectile {
             x = nextX;
             y = nextY;
             traveled += Math.sqrt(stepDx * stepDx + stepDy * stepDy);
-
             if (traveled >= range) return false;
         }
 
         return true;
     }
 
-    private boolean intersectsCircle(double x1, double y1, double x2, double y2, double cx, double cy, double radius) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-
-        double lengthSq = dx * dx + dy * dy;
-        if (lengthSq == 0) return false;
-
-        double t = ((cx - x1) * dx + (cy - y1) * dy) / lengthSq;
-        t = Math.max(0, Math.min(1, t)); // clamp to segment
-
-        double closestX = x1 + t * dx;
-        double closestY = y1 + t * dy;
-
-        double distX = closestX - cx;
-        double distY = closestY - cy;
-        double distSq = distX * distX + distY * distY;
-
-        return distSq <= radius * radius;
+    private double getMaxEnemyRadius(List<Enemy> enemies) {
+        double max = 0;
+        for (Enemy e : enemies) {
+            double r = e.getColliderRadius();
+            if (r > max) max = r;
+        }
+        return Math.max(1.0, max); // Clamp to avoid divide-by-zero
     }
 
     public void draw(Graphics g, double cameraX, double cameraY) {
         g.setColor(Color.YELLOW);
         g.fillOval((int)(x - cameraX - size/2), (int)(y - cameraY - size/2), size, size);
+
+        g.setColor(Color.RED);
+        g.drawLine((int)(x - cameraX), (int)(y - cameraY),
+                (int)(x + Math.cos(angle) * speed - cameraX),
+                (int)(y + Math.sin(angle) * speed - cameraY));
+
+        Rectangle box = getSweptAABB(Math.cos(angle) * speed, Math.sin(angle) * speed);
+            g.setColor(Color.CYAN);
+            g.drawRect(box.x - (int)cameraX, box.y - (int)cameraY, box.width, box.height);
     }
 }
