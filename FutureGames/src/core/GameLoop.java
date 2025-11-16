@@ -1,12 +1,12 @@
 package core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
+import java.awt.Rectangle;
 import entities.Player;
 import entities.Projectile;
+import utils.Constants;
+import utils.Quadtree;
+import waves.WaveManager;
 import entities.Enemy;
 
 public class GameLoop extends Thread {
@@ -60,51 +60,14 @@ public class GameLoop extends Thread {
                 panel.getWeaponManager().tryShoot(player.getX(), player.getY(), angle);
             }
 
-            // --- Grid-based collision ---
-            int cellSize = 100; // adjust based on enemy size
-            Map<Long, List<Enemy>> grid = new HashMap<>();
+            Quadtree quadtree = new Quadtree(0, new Rectangle(0, 0, Constants.MAP_WIDTH, Constants.MAP_HEIGHT));
+            for (Enemy e : enemies) quadtree.insert(e);
 
-            // Place enemies into grid cells
             for (Enemy e : enemies) {
-                int cx = (int)(e.getX() / cellSize);
-                int cy = (int)(e.getY() / cellSize);
-                long key = (((long) cx) << 32) | (cy & 0xffffffffL);
-                grid.computeIfAbsent(key, k -> new ArrayList<>()).add(e);
-            }
-
-            // Check collisions only within same + neighboring cells
-            for (var entry : grid.entrySet()) {
-
-                long key = entry.getKey();
-                int cx = (int)(key >> 32);
-                int cy = (int) key;
-
-                for (int nx = -1; nx <= 1; nx++) {
-                    for (int ny = -1; ny <= 1; ny++) {
-                        long neighborKey = (((long) (cx + nx)) << 32) | ((cy + ny) & 0xffffffffL);
-                        List<Enemy> cellEnemies = grid.get(neighborKey);
-                        if (cellEnemies == null) continue;
-
-                        for (Enemy a : entry.getValue()) {
-                            for (Enemy b : cellEnemies) {
-                                if (a == b) continue;
-
-                                double dx = b.getX() - a.getX();
-                                double dy = b.getY() - a.getY();
-                                double distSq = dx * dx + dy * dy;
-                                double minDist = a.getColliderRadius() + b.getColliderRadius();
-
-                                if (distSq < minDist * minDist && distSq > 0) {
-                                    double distance = Math.sqrt(distSq);
-                                    double overlap = minDist - distance;
-                                    double pushX = (dx / distance) * (overlap / 2);
-                                    double pushY = (dy / distance) * (overlap / 2);
-
-                                    a.setPosition(a.getX() - pushX, a.getY() - pushY);
-                                    b.setPosition(b.getX() + pushX, b.getY() + pushY);
-                                }
-                            }
-                        }
+                List<Enemy> nearby = quadtree.query(e.getBounds());
+                for (Enemy other : nearby) {
+                    if (e != other && isColliding(e, other)) {
+                        resolveBounce(e, other);
                     }
                 }
             }
@@ -151,5 +114,30 @@ public class GameLoop extends Thread {
                 } catch (InterruptedException ignored) {}
             }
         }
+    }
+
+    private boolean isColliding(Enemy a, Enemy b) {
+        double dx = b.getX() - a.getX();
+        double dy = b.getY() - a.getY();
+        double distSq = dx * dx + dy * dy;
+        double minDist = a.getColliderRadius() + b.getColliderRadius();
+        return distSq < minDist * minDist;
+    }
+
+    private void resolveBounce(Enemy a, Enemy b) {
+        double dx = b.getX() - a.getX();
+        double dy = b.getY() - a.getY();
+        double distSq = dx * dx + dy * dy;
+        double minDist = a.getColliderRadius() + b.getColliderRadius();
+
+        if (distSq == 0 || distSq >= minDist * minDist) return;
+
+        double distance = Math.sqrt(distSq);
+        double overlap = minDist - distance;
+        double pushX = (dx / distance) * (overlap / 2);
+        double pushY = (dy / distance) * (overlap / 2);
+
+        a.setPosition(a.getX() - pushX, a.getY() - pushY);
+        b.setPosition(b.getX() + pushX, b.getY() + pushY);
     }
 }

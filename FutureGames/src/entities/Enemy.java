@@ -4,9 +4,19 @@ import java.awt.*;
 import core.CameraManager;
 import core.WorldManager;
 import utils.Constants;
+import java.awt.image.BufferedImage;
 
 public class Enemy {
 protected double worldX, worldY;
+protected BufferedImage sprite;
+
+    private double knockbackVX = 0;
+    private double knockbackVY = 0;
+    private double knockbackDecay = 0.85; // decay factor per frame
+
+    private float hitOverlayAlpha = 0f;
+    private final float maxOverlayAlpha = 0.8f;
+    private final float overlayFadeSpeed = 0.1f; // fade per frame
 
     // Baseline stats
     protected double baseSpeed;
@@ -36,12 +46,19 @@ protected double worldX, worldY;
 
     public double getX() { return worldX; }
     public double getY() { return worldY; }
-    public double getColliderRadius() { return colliderRadius; }
 
     public Enemy(double worldX, double worldY) {
         this.worldX = worldX;
         this.worldY = worldY;
         burstRemaining = burstCount;
+    }
+
+    public void setSprite(BufferedImage sprite) {
+        this.sprite = sprite;
+    }
+
+    public double getColliderRadius() {
+        return size * 0.55; // 10% larger than half-size (0.5 * size * 1.1 = 0.55 * size)
     }
 
     protected void applyGlobalModifiers(double speedMult, double damageMult, double healthMult, double cooldownMult) {
@@ -56,11 +73,12 @@ protected double worldX, worldY;
     double dx = worldX - player.getX();
     double dy = worldY - player.getY();
     double distance = Math.sqrt(dx * dx + dy * dy);
-    double collisionDistance = (size + player.getSize()) / 2.0;
+    double collisionDistance = getColliderRadius() + player.getColliderRadius();
 
         if (distance < collisionDistance) {
             if (burstRemaining > 0 && now - lastBurstTime >= burstInterval) {
                 player.takeDamage(damage);
+                player.applyKnockback(worldX, worldY, damage);
                 lastBurstTime = now;
                 burstRemaining--;
                 //System.out.println("Enemy burst hit! Player health: " + player.getHealth());
@@ -82,6 +100,11 @@ protected double worldX, worldY;
         double dx = getWrappedDelta(player.getX(), worldX, Constants.MAP_WIDTH);
         double dy = getWrappedDelta(player.getY(), worldY, Constants.MAP_HEIGHT);
 
+        if (hitOverlayAlpha > 0f) {
+            hitOverlayAlpha -= overlayFadeSpeed;
+        if (hitOverlayAlpha < 0f) hitOverlayAlpha = 0f;
+        }
+
         if (dx != 0 || dy != 0) {
             double length = Math.sqrt(dx * dx + dy * dy);
             double normX = dx / length;
@@ -91,8 +114,33 @@ protected double worldX, worldY;
             worldY += (normY * speed);
         }
 
+        worldX += knockbackVX;
+        worldY += knockbackVY;
+
+        knockbackVX *= knockbackDecay;
+        knockbackVY *= knockbackDecay;
+
+        if (Math.abs(knockbackVX) < 0.1) knockbackVX = 0;
+        if (Math.abs(knockbackVY) < 0.1) knockbackVY = 0;
+
         worldX = WorldManager.wrapX(worldX);
         worldY = WorldManager.wrapY(worldY);
+    }
+
+    public void applyKnockback(double sourceX, double sourceY, double damage, double maxHealth) {
+        double threshold = 0.25 * maxHealth;
+        if (damage < threshold) return;
+
+        double scale = damage / threshold; // 1.0 = 25%, 2.0 = 50%, etc.
+        double dx = worldX - sourceX;
+        double dy = worldY - sourceY;
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length == 0) return;
+
+        double knockbackStrength = 5.0 * scale; // tune this constant
+
+        knockbackVX = (dx / length) * knockbackStrength;
+        knockbackVY = (dy / length) * knockbackStrength;
     }
 
     private int getWrappedDelta(double target, double source, int mapSize) {
@@ -112,12 +160,40 @@ protected double worldX, worldY;
                 int drawX = (int)(wrappedX - camera.getOffsetX());
                 int drawY = (int)(wrappedY - camera.getOffsetY());
 
-                g.setColor(Color.RED);
+            //DEBUG COLLIDER RADIUS
                 int r = (int) getColliderRadius();
-                g.drawOval(drawX + size / 2 - r, drawY + size / 2 - r, r * 2, r * 2);
+                int centerX = drawX + size / 2;
+                int centerY = drawY + size / 2;
 
-                g.setColor(color);
-                g.fillRect(drawX, drawY, size, size);
+                g.setColor(Color.RED);
+                g.drawOval(centerX - r, centerY - r, r * 2, r * 2);
+            // END DEBUG
+
+                if (sprite != null) {
+                    Graphics2D g2d = (Graphics2D) g.create();
+
+                    // Draw base sprite
+                    g2d.drawImage(sprite, drawX, drawY, size, size, null);
+
+                    // Apply red tint only to non-transparent pixels
+                    if (hitOverlayAlpha > 0f) {
+                        BufferedImage tinted = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+                        Graphics2D tg = tinted.createGraphics();
+
+                        tg.drawImage(sprite, 0, 0, size, size, null);
+                        tg.setComposite(AlphaComposite.SrcAtop.derive(hitOverlayAlpha));
+                        tg.setColor(Color.RED);
+                        tg.fillRect(0, 0, size, size);
+                        tg.dispose();
+
+                        g2d.drawImage(tinted, drawX, drawY, null);
+                    }
+
+                    g2d.dispose();
+                } else {
+                    g.setColor(color);
+                    g.fillRect(drawX, drawY, size, size);
+                }
             }
         }
     }
@@ -130,8 +206,22 @@ protected double worldX, worldY;
         return health;
     }
 
+    public double getCenterX() {
+        return worldX + size / 2.0;
+    }
+
+    public double getCenterY() {
+        return worldY + size / 2.0;
+    }
+
+    public Rectangle getBounds() {
+        int r = (int)getColliderRadius();
+        return new Rectangle((int)getCenterX() - r, (int)getCenterY() - r, r * 2, r * 2);
+    }
+
     public void takeDamage(double amount) {
         health -= amount;
+        hitOverlayAlpha = maxOverlayAlpha;
     }
 
     public boolean isAlive() {

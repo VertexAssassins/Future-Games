@@ -9,6 +9,7 @@ import entities.Enemy;
 import entities.Player;
 import entities.Projectile;
 import input.KeyBindings;
+import waves.WaveManager;
 import weapons.*;
 
 import java.util.ArrayList;
@@ -118,7 +119,7 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-                // Draw player
+        // Draw player
         player.draw(g, camera);
 
         // Draw projectiles
@@ -181,7 +182,6 @@ public class GamePanel extends JPanel {
         weaponManager.getCurrent().reload(); // optional
 
         // Reset wave manager
-        waveManager.reset(); // implement this method in WaveManager
-        waveManager.advanceWave();
+        waveManager.reset();
     }
 }

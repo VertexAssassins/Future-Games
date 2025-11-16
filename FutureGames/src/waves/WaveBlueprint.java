@@ -1,9 +1,11 @@
-package core;
+package waves;
 
 import entities.Enemy;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import core.EnemySpawnRule;
 
 public class WaveBlueprint {
     private final List<EnemySpawnRule> rules = new ArrayList<>();

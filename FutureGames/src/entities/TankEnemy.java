@@ -6,7 +6,7 @@ public class TankEnemy extends Enemy {
     public TankEnemy(double worldX, double worldY) {
         super(worldX, worldY);
         baseSpeed = .8;
-        baseDamage = 2.5;
+        baseDamage = 20;
         baseHealth = 100.0;
         baseAttackCooldown = 1200;
         burstCount = 2;
