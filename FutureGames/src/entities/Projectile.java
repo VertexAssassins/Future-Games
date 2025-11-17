@@ -1,26 +1,20 @@
 package entities;
 
-import java.awt.Graphics;
-import java.awt.Color;
+import java.awt.*;
 import java.util.List;
-import java.awt.Rectangle;
 import utils.Quadtree;
-
 import utils.CollisionResolver;
+import utils.Constants;
 
 public class Projectile {
     private double x, y;
-    private final double angle; // radians
+    private final double angle;
     private final double speed;
     private final double range;
     private final double damage;
     private double traveled = 0;
 
-    private final int size = 10; // simple circle for now
-
-    public double getX() { return x; }
-    public double getY() { return y; }
-    public double getRadius() { return size * 1; }
+    private final int size = 10;
 
     public Projectile(double x, double y, double angle, double speed, double range, double damage) {
         this.x = x;
@@ -31,38 +25,58 @@ public class Projectile {
         this.damage = damage;
     }
 
-    public Rectangle getSweptAABB(double dx, double dy) {
-        double minX = Math.min(x, x + dx) - getRadius();
-        double minY = Math.min(y, y + dy) - getRadius();
-        double width = Math.abs(dx) + getRadius() * 2;
-        double height = Math.abs(dy) + getRadius() * 2;
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getRadius() { return size; }
 
-        return new Rectangle((int)minX, (int)minY, (int)width, (int)height);
+    public Rectangle getSweptAABB() {
+        double dx = Math.cos(angle) * speed;
+        double dy = Math.sin(angle) * speed;
+        return getSweptAABB(dx, dy);
+    }
+
+    public Rectangle getSweptAABB(double dx, double dy) {
+        double buffer = 4.0; // small expansion
+        double minX = Math.min(x, x + dx) - getRadius() - buffer;
+        double minY = Math.min(y, y + dy) - getRadius() - buffer;
+
+        minX = Math.max(0, minX);
+        minY = Math.max(0, minY);
+
+        double width = Math.abs(dx) + getRadius() * 2 + buffer * 2;
+        double height = Math.abs(dy) + getRadius() * 2 + buffer * 2;
+        return new Rectangle((int) minX, (int) minY, (int) width, (int) height);
     }
 
     public boolean update(List<Enemy> enemies, Quadtree quadtree) {
         double dx = Math.cos(angle) * speed;
         double dy = Math.sin(angle) * speed;
         double distance = Math.sqrt(dx * dx + dy * dy);
-        Rectangle sweepBox = getSweptAABB(dx, dy);
-        List<Enemy> candidates = quadtree.query(sweepBox);
+        List<Enemy> candidates = quadtree.query(getSweptAABB(dx, dy));
 
-        for (Enemy e : candidates) {
-            if (CollisionResolver.checkInitialOverlap(this, e)) {
-                e.takeDamage(damage);
-                e.applyKnockback(x, y, damage, e.getHealth() + damage);
-                return false;
-            }
-        }
+        if (checkInitialOverlap(candidates)) return false;
+        if (!moveWithCollision(candidates, dx, dy, distance)) return false;
+        return !checkFinalOverlap(candidates);
+    }
 
-        double stepSize = 2.0;
-        int steps = Math.max(6, (int)(distance / stepSize));
+    public boolean move() {
+        double dx = Math.cos(angle) * speed;
+        double dy = Math.sin(angle) * speed;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return moveWithCollision(List.of(), dx, dy, distance);
+    }
 
+    private boolean moveWithCollision(List<Enemy> candidates, double dx, double dy, double distance) {
+        double stepSize = Math.min(1.0, getRadius() * 0.5);
+        int steps = Math.max(10, (int) (distance / stepSize));
         double stepDx = dx / steps;
         double stepDy = dy / steps;
 
         double currX = x;
         double currY = y;
+
+        currX = wrap(currX, Constants.MAP_WIDTH);
+        currY = wrap(currY, Constants.MAP_HEIGHT);
 
         for (int i = 0; i < steps; i++) {
             double nextX = currX + stepDx;
@@ -70,8 +84,7 @@ public class Projectile {
 
             for (Enemy e : candidates) {
                 if (CollisionResolver.checkProjectileHit(this, e, currX, currY, nextX, nextY)) {
-                    e.takeDamage(damage);
-                    e.applyKnockback(currX, currY, damage, e.getHealth() + damage);
+                    applyDamage(e, currX, currY);
                     return false;
                 }
             }
@@ -84,35 +97,76 @@ public class Projectile {
 
         x = currX;
         y = currY;
-
-        // Final overlap check
-        for (Enemy e : candidates) {
-            double dxFinal = x - e.getCenterX();
-            double dyFinal = y - e.getCenterY();
-            double distSq = dxFinal * dxFinal + dyFinal * dyFinal;
-            double collisionDist = getRadius() + e.getColliderRadius();
-
-            if (distSq < collisionDist * collisionDist) {
-                e.takeDamage(damage);
-                e.applyKnockback(x, y, damage, e.getHealth() + damage);
-                return false;
-            }
-        }
-
         return true;
     }
 
+    private double wrap(double value, double max) {
+        if (value < 0) return value + max;
+        if (value >= max) return value - max;
+        return value;
+    }
+
+    public boolean checkCollisions(List<Enemy> candidates) {
+        return checkInitialOverlap(candidates) || checkFinalOverlap(candidates);
+    }
+
+    private boolean checkInitialOverlap(List<Enemy> candidates) {
+        for (Enemy e : candidates) {
+            if (CollisionResolver.checkInitialOverlap(this, e)) {
+                applyDamage(e, x, y);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkFinalOverlap(List<Enemy> candidates) {
+        for (Enemy e : candidates) {
+            double dx = x - e.getCenterX();
+            double dy = y - e.getCenterY();
+            double distSq = dx * dx + dy * dy;
+            double collisionDist = getRadius() + e.getColliderRadius();
+
+            if (distSq < collisionDist * collisionDist) {
+                applyDamage(e, x, y);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void applyDamage(Enemy e, double hitX, double hitY) {
+        e.takeDamage(damage);
+        e.applyKnockback(hitX, hitY, damage, e.getHealth() + damage);
+    }
+
     public void draw(Graphics g, double cameraX, double cameraY) {
-        g.setColor(Color.YELLOW);
-        g.fillOval((int)(x - cameraX - size/2), (int)(y - cameraY - size/2), size, size);
+        int mapWidth = Constants.MAP_WIDTH;
+        int mapHeight = Constants.MAP_HEIGHT;
 
-        g.setColor(Color.RED);
-        g.drawLine((int)(x - cameraX), (int)(y - cameraY),
-                (int)(x + Math.cos(angle) * speed - cameraX),
-                (int)(y + Math.sin(angle) * speed - cameraY));
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                double wrappedX = x + dx * mapWidth;
+                double wrappedY = y + dy * mapHeight;
 
-        Rectangle box = getSweptAABB(Math.cos(angle) * speed, Math.sin(angle) * speed);
-            g.setColor(Color.CYAN);
-            g.drawRect(box.x - (int)cameraX, box.y - (int)cameraY, box.width, box.height);
+                int drawX = (int) (wrappedX - cameraX);
+                int drawY = (int) (wrappedY - cameraY);
+
+                // Skip off-screen copies
+                if (drawX + size < 0 || drawY + size < 0 || drawX > mapWidth || drawY > mapHeight) continue;
+
+                g.setColor(Color.YELLOW);
+                g.fillOval(drawX - size / 2, drawY - size / 2, size, size);
+
+                g.setColor(Color.RED);
+                g.drawLine(drawX, drawY,
+                    (int) (wrappedX + Math.cos(angle) * speed - cameraX),
+                    (int) (wrappedY + Math.sin(angle) * speed - cameraY));
+
+                Rectangle box = getSweptAABB();
+                g.setColor(Color.CYAN);
+                g.drawRect(box.x - (int) cameraX, box.y - (int) cameraY, box.width, box.height);
+            }
+        }
     }
 }

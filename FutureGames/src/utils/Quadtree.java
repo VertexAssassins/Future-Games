@@ -4,9 +4,11 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import entities.Enemy;
+import java.awt.Color;
+import java.awt.Graphics;
 
 public class Quadtree {
-    private static final int MAX_OBJECTS = 10;
+    private static final int MAX_OBJECTS = 6;
     private static final int MAX_LEVELS = 5;
 
     private int level;
@@ -60,9 +62,12 @@ public class Quadtree {
     public List<Enemy> query(Rectangle range) {
         List<Enemy> result = new ArrayList<>();
 
-        int index = getIndex(range);
-        if (index != -1 && nodes[0] != null) {
-            result.addAll(nodes[index].query(range));
+        if (nodes[0] != null) {
+            for (Quadtree node : nodes) {
+                if (node.bounds.intersects(range)) {
+                    result.addAll(node.query(range));
+                }
+            }
         }
 
         result.addAll(objects);
@@ -100,5 +105,15 @@ public class Quadtree {
         if (bottom && right) return 3;
 
         return -1; // doesn't fit neatly into a quadrant
+    }
+
+    public List<Enemy> getAll() {
+        List<Enemy> all = new ArrayList<>(objects);
+        if (nodes[0] != null) {
+            for (Quadtree node : nodes) {
+                all.addAll(node.getAll());
+            }
+        }
+        return all;
     }
 }

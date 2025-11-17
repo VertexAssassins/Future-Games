@@ -1,5 +1,4 @@
 package weapons;
-import java.awt.Point;
 import java.util.Map;
 
 public class WeaponManager {

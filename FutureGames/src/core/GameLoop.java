@@ -44,69 +44,7 @@ public class GameLoop extends Thread {
             }
 
             while (delta >= 1) {
-                // Phase 1: Update player and wave manager
-                player.update();
-                waveManager.update();
-
-                // Phase 2: Update enemy movement (no attack yet)
-                for (Enemy enemy : enemies) {
-                    enemy.updateMovement(player); // movement only
-                }
-
-                // Phase 3: Build quadtree from updated enemy positions
-                Quadtree quadtree = new Quadtree(0, new Rectangle(0, 0, Constants.MAP_WIDTH, Constants.MAP_HEIGHT));
-                for (Enemy e : enemies) quadtree.insert(e);
-
-                // Phase 4: Resolve enemy bounce
-                for (Enemy e : enemies) {
-                    List<Enemy> nearby = quadtree.query(e.getBounds());
-                    for (Enemy other : nearby) {
-                        if (e != other && isColliding(e, other)) {
-                            resolveBounce(e, other);
-                        }
-                    }
-                }
-
-                // Phase 5: Update projectiles using quadtree
-                synchronized (panel.getProjectiles()) {
-                    for (int i = panel.getProjectiles().size() - 1; i >= 0; i--) {
-                        Projectile p = panel.getProjectiles().get(i);
-                        boolean alive = p.update(enemies, quadtree);
-                        if (!alive) {
-                            panel.getProjectiles().remove(i);
-                        }
-                    }
-                }
-
-                for (Enemy enemy : enemies) {
-                    enemy.applyKnockbackMovement(); // after knockback is applied
-                }
-
-                // Phase 6: Apply enemy attacks (damage + knockback)
-                for (Enemy enemy : enemies) {
-                    enemy.attemptAttack(player);
-                }
-
-                // Phase 7: Update weapon manager and handle shooting
-                panel.getWeaponManager().update();
-                if (panel.isMouseDown()) {
-                    double angle = panel.getAimAngle();
-                    panel.getWeaponManager().tryShoot(player.getX(), player.getY(), angle);
-                }
-
-                // Phase 8: Handle enemy deaths
-                for (Enemy e : enemies) {
-                    if (!e.isAlive()) {
-                        e.onDeath();
-                    }
-                }
-                enemies.removeIf(e -> !e.isAlive());
-
-                // Phase 9: Advance wave if needed
-                if (panel.getGameState() == GameState.PLAYING && enemies.isEmpty() && !waveManager.isWaveActive()) {
-                    waveManager.advanceWave();
-                }
-
+                updateGameLogic();
                 delta--;
             }
 
@@ -126,6 +64,115 @@ public class GameLoop extends Thread {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException ignored) {}
             }
+        }
+    }
+
+    private void updateGameLogic() {
+        player.update();
+        waveManager.update();
+
+        updateEnemyMovement();
+        applyKnockbackMovement();
+
+        updateWeaponsAndShooting();
+
+        Quadtree quadtree = buildQuadtree();
+
+        resolveEnemyBounce(quadtree);
+        quadtree = rebuildQuadtree(); // final rebuild before projectile update
+
+        updateProjectiles(quadtree);
+        
+        applyEnemyAttacks();
+        handleEnemyDeaths();
+        maybeAdvanceWave();
+    }
+
+    private void updateEnemyMovement() {
+        for (Enemy enemy : enemies) {
+            enemy.updateMovement(player);
+        }
+    }
+
+    private Quadtree buildQuadtree() {
+        Quadtree quadtree = new Quadtree(0, new Rectangle(0, 0, Constants.MAP_WIDTH, Constants.MAP_HEIGHT));
+        for (Enemy e : enemies) quadtree.insert(e);
+        return quadtree;
+    }
+
+    private Quadtree rebuildQuadtree() {
+        return buildQuadtree(); // reuse logic
+    }
+
+    private void resolveEnemyBounce(Quadtree quadtree) {
+        for (Enemy e : enemies) {
+            List<Enemy> nearby = quadtree.query(e.getBounds());
+            for (Enemy other : nearby) {
+                if (e != other && isColliding(e, other)) {
+                    resolveBounce(e, other);
+                }
+            }
+        }
+    }
+
+    private void applyKnockbackMovement() {
+        for (Enemy enemy : enemies) {
+            enemy.applyKnockbackMovement();
+        }
+    }
+
+    private void updateProjectiles(Quadtree quadtree) {
+        synchronized (panel.getProjectiles()) {
+            List<Projectile> projectiles = panel.getProjectiles();
+
+            for (int i = projectiles.size() - 1; i >= 0; i--) {
+                Projectile p = projectiles.get(i);
+
+                // Step 1: move projectile
+                boolean stillAlive = p.move();
+                if (!stillAlive) {
+                    projectiles.remove(i);
+                    continue;
+                }
+
+                // Step 2: check collision with fresh quadtree
+                List<Enemy> candidates = quadtree.query(p.getSweptAABB());
+                if (p.checkCollisions(candidates)) {
+                    projectiles.remove(i);
+                }
+
+            System.out.println("Projectile at (" + p.getX() + ", " + p.getY() + ") queried " + candidates.size() + " enemies.");
+            
+            }
+        }
+    }
+
+    private void applyEnemyAttacks() {
+        for (Enemy enemy : enemies) {
+            enemy.attemptAttack(player);
+        }
+    }
+
+    private void updateWeaponsAndShooting() {
+        panel.getWeaponManager().update();
+        if (panel.isMouseDown()) {
+            double angle = panel.getAimAngle();
+            panel.getWeaponManager().tryShoot(player.getX(), player.getY(), angle);
+        }
+    }
+
+    private void handleEnemyDeaths() {
+        for (Enemy e : enemies) {
+            if (!e.isAlive()) {
+                e.onDeath();
+            }
+        }
+        enemies.removeIf(e -> !e.isAlive());
+    }
+
+    private void maybeAdvanceWave() {
+        if (panel.getGameState() == GameState.PLAYING && enemies.isEmpty() && !waveManager.isWaveActive()) {
+            waveManager.advanceWave();
         }
     }
 
