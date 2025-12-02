@@ -164,7 +164,7 @@ public class GameLoop extends Thread {
     private void handleEnemyDeaths() {
         for (Enemy e : enemies) {
             if (!e.isAlive()) {
-                e.onDeath();
+                e.onDeath(player);
             }
         }
         enemies.removeIf(e -> !e.isAlive());

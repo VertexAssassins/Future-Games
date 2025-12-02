@@ -25,12 +25,14 @@ protected BufferedImage sprite;
     protected boolean isProjectile;
     protected double baseHealth;
     protected long baseAttackCooldown; // default 1 second
+    protected int basePoints;
 
     // Effective stats (after modifiers)
     protected double speed;
     protected double damage;
     protected double health;
     protected long attackCooldown;
+    protected int points;
 
     //Burst logic
     protected int burstCount;          // Number of hits per burst
@@ -61,11 +63,12 @@ protected BufferedImage sprite;
         return size * 0.55; // 10% larger than half-size (0.5 * size * 1.1 = 0.55 * size)
     }
 
-    protected void applyGlobalModifiers(double speedMult, double damageMult, double healthMult, double cooldownMult) {
+    protected void applyGlobalModifiers(double speedMult, double damageMult, double healthMult, double cooldownMult, int pointsMult) {
         speed = baseSpeed * speedMult;
         damage = baseDamage * damageMult;
         health = baseHealth * healthMult;
         attackCooldown = (long)(baseAttackCooldown * cooldownMult);
+        points = basePoints * pointsMult;
     }
 
     public void attemptAttack(Player player) {
@@ -211,6 +214,10 @@ protected BufferedImage sprite;
         return health;
     }
 
+    public int getPoints() {
+        return points;
+    }
+
     public double getCenterX() {
         return worldX + size / 2.0;
     }
@@ -233,8 +240,8 @@ protected BufferedImage sprite;
         return health > 0;
     }
 
-    public void onDeath() {
-    // Placeholder for future effects
-    System.out.println("Enemy died at (" + worldX + ", " + worldY + ")");
+    public void onDeath(Player player) {
+        player.addPoints(points);
+        System.out.println("Enemy died at (" + worldX + ", " + worldY + ")");
     }
 }

@@ -115,7 +115,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    @Override
+   @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -129,23 +129,38 @@ public class GamePanel extends JPanel {
             }
         }
 
-        // Draw enemies (you might want to draw them last if needed)
+        // Draw enemies
         synchronized (enemies) {
             for (Enemy enemy : enemies) {
                 enemy.draw(g, camera);
             }
         }
 
-        g.setColor(Color.WHITE);
+        // HUD
         g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("Wave: " + waveManager.getWaveNumber(), getWidth() - 120, 30);
+        g.setColor(Color.WHITE);
+
+        if (gameState == GameState.PLAYING) {
+            // Wave (top-left)
+            g.drawString("Wave: " + waveManager.getWaveNumber(), 20, 30);
+
+            // Points (top-right)
+            g.drawString("Points: " + player.getPoints(), getWidth() - 150, 30);
+        }
 
         if (gameState == GameState.GAME_OVER) {
+            // Final score (center)
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Arial", Font.BOLD, 40));
+            g.drawString("Final Score: " + player.getPoints(),
+                        getWidth() / 2 - 100, getHeight() / 2);
+
+            // Game Over text
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 48));
             g.drawString("Game Over", getWidth() / 2 - 150, getHeight() / 2 - 80);
 
-            // Draw retry button
+            // Retry button
             g.setColor(Color.DARK_GRAY);
             g.fillRect(retryButton.x, retryButton.y, retryButton.width, retryButton.height);
             g.setColor(Color.WHITE);
@@ -153,6 +168,7 @@ public class GamePanel extends JPanel {
             g.drawString("Retry", retryButton.x + 65, retryButton.y + 32);
         }
 
+        // Update retry button position
         retryButton = new Rectangle(getWidth() / 2 - 100, getHeight() / 2, 200, 50);
     }
 

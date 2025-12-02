@@ -21,10 +21,11 @@ public class FastEnemy extends Enemy {
         baseAttackCooldown = 800;
         burstCount = 1;
         burstInterval = 150;
+        basePoints = 1;
         
         size = 50;
         color = Color.CYAN;
 
-        applyGlobalModifiers(1.0, 1.0, 1.0, 1.0); // no scaling, just use new base values
+        applyGlobalModifiers(1.0, 1.0, 1.0, 1.0, 1); // no scaling, just use new base values
     }
 }

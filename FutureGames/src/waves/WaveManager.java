@@ -24,8 +24,10 @@ public class WaveManager {
         this.enemies = enemies;
         this.player = player;
 
-        blueprint.addRule(blueprint.new ConditionalSpawnRule(FastEnemy.class, waveNum -> waveNum * 100));
-        blueprint.addRule(blueprint.new ConditionalSpawnRule(TankEnemy.class, waveNum -> (waveNum % 5 == 0 ? 3 : 0) + (waveNum % 10 == 0 ? 3 : 0)));
+        // Fast enemy: increases by 5 each wave
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(FastEnemy.class, waveNum -> waveNum * 5));
+        // Tank enemy: increases by ceil(sqrt(waveNum))
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(TankEnemy.class, waveNum -> (int) Math.ceil(Math.sqrt(waveNum))));
     }
 
     public void startWave(Wave wave) {

@@ -3,6 +3,7 @@ package entities;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import core.PersistenceManager;
 
 import javax.imageio.ImageIO;
 
@@ -12,6 +13,7 @@ public class Player {
     private double x = 300, y = 200;
     private final int size = 80;
     private double maxHealth;
+    private int points;
 
     private float hitOverlayAlpha = 0f;
     private final float maxOverlayAlpha = 0.8f;
@@ -48,6 +50,8 @@ public class Player {
 
     public Player() {
         applyModifiers(1.0, 1.0); // default: no modifiers
+
+        points = PersistenceManager.load("points", 0);
 
         try {
             sprite = ImageIO.read(getClass().getResource("/assets/player/handgun/player.png"));
@@ -120,6 +124,11 @@ public class Player {
         }
     }
 
+    public void addPoints(int amount) {
+        points += amount;
+        PersistenceManager.save("points", points); // persist immediately
+    }
+
     public boolean isAlive() {
         return health > 0;
     }
@@ -128,6 +137,8 @@ public class Player {
     public double getY() { return y; }
     public int getSize() { return size; }
     public double getHealth() { return health; }
+    public int getPoints() { return points; }
+    public void resetPoints() { points = 0; }
 
     public void update() {
         if (isDashing) {
