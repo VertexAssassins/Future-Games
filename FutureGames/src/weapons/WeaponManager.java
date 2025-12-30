@@ -11,6 +11,13 @@ public class WeaponManager {
     }
 
     public void switchTo(WeaponType type) {
+        String id = type.name().toLowerCase();
+
+        if (!WeaponUnlockManager.isUnlocked(id)) {
+            System.out.println("Weapon locked: " + id);
+            return; // do NOT switch
+        }
+
         current = type;
     }
 

@@ -24,6 +24,10 @@ public class GamePanel extends JPanel {
     private final List<Projectile> projectiles = new ArrayList<>();
     private GameState gameState = GameState.PLAYING;
     private Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
+    private Rectangle shopButton;
+    private Rectangle quitButton;
+    private Rectangle continueButton;
+    private final ShopPanel shopPanel = new ShopPanel();
     private boolean mouseDown = false;
     private Point mousePos = new Point(0, 0);
     public boolean isMouseDown() { return mouseDown; }
@@ -67,16 +71,47 @@ public class GamePanel extends JPanel {
         });
         new GameLoop(this, player, enemies, waveManager).start();
 
-        // Handle shooting
-        addMouseListener(new MouseAdapter() {
+            // Handle shooting
+            addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                int mx = e.getX();
+                int my = e.getY();
+
+                // --- GAME OVER SCREEN BUTTONS ---
+                if (gameState == GameState.GAME_OVER) {
+
+                    if (retryButton.contains(mx, my)) {
+                        resetGame();
+                        return;
+                    }
+
+                    if (shopButton.contains(mx, my)) {
+                        gameState = GameState.SHOP;
+                        return;
+                    }
+
+                    if (quitButton.contains(mx, my)) {
+                        System.exit(0);
+                    }
+                }
+
+                // --- SHOP SCREEN INTERACTION ---
+                if (gameState == GameState.SHOP) {
+                    shopPanel.handleClick(mx, my, player);
+
+                    // Handle continue button
+                    if (continueButton.contains(mx, my)) {
+                        gameState = GameState.PLAYING;
+                        return;
+                    }
+
+                    return;
+                }
+
+                // --- NORMAL GAME SHOOTING ---
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     mouseDown = true;
-
-                    if (gameState == GameState.GAME_OVER && retryButton.contains(e.getPoint())) {
-                        resetGame();
-                    }
                 }
             }
 
@@ -87,10 +122,8 @@ public class GamePanel extends JPanel {
                 }
             }
         });
-
-        // Track mouse for aiming
         addMouseMotionListener(new MouseMotionAdapter() {
-        @Override
+            @Override
             public void mouseMoved(MouseEvent e) {
                 mousePos = e.getPoint();
             }
@@ -166,10 +199,43 @@ public class GamePanel extends JPanel {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.PLAIN, 24));
             g.drawString("Retry", retryButton.x + 65, retryButton.y + 32);
+
+            // Shop button
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(shopButton.x, shopButton.y, shopButton.width, shopButton.height);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 24));
+            g.drawString("Shop", shopButton.x + 70, shopButton.y + 32);
+
+            // Quit button
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(quitButton.x, quitButton.y, quitButton.width, quitButton.height);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 24));
+            g.drawString("Quit", quitButton.x + 75, quitButton.y + 32);
+
+        }
+
+        if (gameState == GameState.SHOP) {
+            shopPanel.draw(g, player, getWidth(), getHeight());
+
+            // Continue button (bottom-right)
+            continueButton = new Rectangle(getWidth() - 220, getHeight() - 80, 200, 50);
+
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(continueButton.x, continueButton.y, continueButton.width, continueButton.height);
+
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 24));
+            g.drawString("Continue", continueButton.x + 50, continueButton.y + 32);
+
+            return; // skip drawing game world
         }
 
         // Update retry button position
         retryButton = new Rectangle(getWidth() / 2 - 100, getHeight() / 2, 200, 50);
+        shopButton  = new Rectangle(getWidth() / 2 - 100, getHeight() / 2 + 70, 200, 50);
+        quitButton  = new Rectangle(getWidth() / 2 - 100, getHeight() / 2 + 140, 200, 50);
     }
 
     public List<Projectile> getProjectiles() {

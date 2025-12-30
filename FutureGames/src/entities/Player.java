@@ -21,7 +21,7 @@ public class Player {
 
     // Base stats
     private double baseSpeed = 4.0;
-    private double baseHealth = 10000000.0;
+    private double baseHealth = 100.0;
 
     private long lastHitTime = 0;
     private long damageCooldown = 100; // milliseconds
