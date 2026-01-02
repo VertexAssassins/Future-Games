@@ -27,6 +27,7 @@ public class GamePanel extends JPanel {
     private Rectangle shopButton;
     private Rectangle quitButton;
     private Rectangle continueButton;
+    private Rectangle resetProgressButton;
     private final ShopPanel shopPanel = new ShopPanel();
     private boolean mouseDown = false;
     private Point mousePos = new Point(0, 0);
@@ -51,8 +52,12 @@ public class GamePanel extends JPanel {
     private final WeaponManager weaponManager = new WeaponManager(
         Map.of(
             WeaponType.HANDGUN, new Handgun(this::spawnProjectile),
+            WeaponType.REVOLVER, new Revolver(this::spawnProjectile),
+            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile),
             WeaponType.SMG, new SMG(this::spawnProjectile),
-            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile)
+            WeaponType.ASSAULTRIFLE, new AssaultRifle(this::spawnProjectile),
+            WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile),
+            WeaponType.MINIGUN, new Minigun(this::spawnProjectile)
         ),
         WeaponType.HANDGUN
     );
@@ -62,11 +67,16 @@ public class GamePanel extends JPanel {
         setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.BLACK);
         setFocusable(true);
+        WeaponUnlockManager.unlock("handgun");
         KeyBindings.setup(this, player, index -> {
             switch (index) {
                 case 0 -> weaponManager.switchTo(WeaponType.HANDGUN);
-                case 1 -> weaponManager.switchTo(WeaponType.SMG);
+                case 1 -> weaponManager.switchTo(WeaponType.REVOLVER);
                 case 2 -> weaponManager.switchTo(WeaponType.SHOTGUN);
+                case 3 -> weaponManager.switchTo(WeaponType.SMG);
+                case 4 -> weaponManager.switchTo(WeaponType.ASSAULTRIFLE);
+                case 5 -> weaponManager.switchTo(WeaponType.AUTOSHOTGUN);
+                case 6 -> weaponManager.switchTo(WeaponType.MINIGUN);
             }
         });
         new GameLoop(this, player, enemies, waveManager).start();

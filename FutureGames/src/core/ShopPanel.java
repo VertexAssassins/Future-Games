@@ -13,9 +13,12 @@ public class ShopPanel {
     public ShopPanel() {
         items = new ArrayList<>();
         items.add(new ShopItem("pistol", "Pistol", 0));       // default unlocked
-        items.add(new ShopItem("smg", "SMG", 200));
-        items.add(new ShopItem("shotgun", "Shotgun", 1000));
-        items.add(new ShopItem("laser", "Laser Rifle", 5000));
+        items.add(new ShopItem("revolver", "Revolver", 1));
+        items.add(new ShopItem("shotgun", "Shotgun", 1));
+        items.add(new ShopItem("smg", "SMG", 1));
+        items.add(new ShopItem("assaultrifle", "Assault Rifle", 1));
+        items.add(new ShopItem("autoshotgun", "Auto Shotgun", 1));
+        items.add(new ShopItem("minigun", "Minigun", 1));
     }
 
     public void draw(Graphics g, Player player, int width, int height) {

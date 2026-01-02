@@ -1,6 +1,9 @@
 package core;
 
 import javax.swing.*;
+
+import weapons.WeaponUnlockManager;
+
 import java.awt.*;
 
 public class StartScreen extends JPanel {
@@ -30,10 +33,31 @@ public class StartScreen extends JPanel {
         quitButton.setFont(new Font("Arial", Font.BOLD, 24));
         add(quitButton);
 
+        // Reset Button
+        JButton resetButton = new JButton("Reset Progress");
+        resetButton.setBounds(500, 500, 200, 60);
+        resetButton.setFont(new Font("Arial", Font.BOLD, 24));
+        add(resetButton);
+
         // Button actions
         startButton.addActionListener(e -> {
             frame.getContentPane().removeAll();
             frame.add(new GamePanel());
+            frame.revalidate();
+            frame.repaint();
+        });
+
+        resetButton.addActionListener(e -> {
+            // Reset points
+            PersistenceManager.save("points", 0);
+
+            // Reset weapon unlocks
+            WeaponUnlockManager.resetAll();
+
+            // Optional: show confirmation
+            JOptionPane.showMessageDialog(this, "Progress reset!");
+
+            // Refresh the screen
             frame.revalidate();
             frame.repaint();
         });

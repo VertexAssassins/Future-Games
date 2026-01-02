@@ -2,6 +2,10 @@ package weapons;
 
 public enum WeaponType {
     HANDGUN,
+    REVOLVER,
+    SHOTGUN,
     SMG,
-    SHOTGUN
+    ASSAULTRIFLE,
+    AUTOSHOTGUN,
+    MINIGUN
 }

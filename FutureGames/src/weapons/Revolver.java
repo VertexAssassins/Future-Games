@@ -1,9 +1,9 @@
 package weapons;
 import entities.Projectile;
 
-public class SMG extends Weapon {
-    public SMG(ProjectileSpawner spawner) {
-        super(new WeaponStats(5, 25, 800, 15, 10, 30, 1500), spawner);
+public class Revolver extends Weapon {
+    public Revolver(ProjectileSpawner spawner) {
+        super(new WeaponStats(8, 12, 400, 10, 1.5, 6, 4000), spawner);
     }
 
     @Override

@@ -32,12 +32,12 @@ public class KeyBindings {
         im.put(KeyStroke.getKeyStroke("pressed SPACE"), "dash");
         am.put("dash", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                player.startDash(); // You’ll define this in Player
+                player.startDash();
             }
         });
 
         // Weapon switching keys — **moved inside the setup() method**
-        String[] weaponKeys = {"1", "2", "3"};
+        String[] weaponKeys = {"1", "2", "3", "4", "5", "6", "7"};
         for (int i = 0; i < weaponKeys.length; i++) {
             String key = weaponKeys[i];
             int weaponIndex = i; // capture index for lambda

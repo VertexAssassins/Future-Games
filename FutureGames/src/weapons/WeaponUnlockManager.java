@@ -12,4 +12,16 @@ public class WeaponUnlockManager {
     public static void unlock(String weaponId) {
         prefs.putBoolean("weaponUnlocked_" + weaponId, true);
     }
+
+    public static void resetAll() {
+        try {
+            for (String key : prefs.keys()) {
+                if (key.startsWith("weaponUnlocked_")) {
+                    prefs.putBoolean(key, false);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
