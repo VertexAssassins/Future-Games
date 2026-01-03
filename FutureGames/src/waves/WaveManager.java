@@ -1,12 +1,15 @@
 package waves;
 
 import entities.Enemy;
-import entities.FastEnemy;
 
 import java.util.List;
 
 import entities.Player;
-import entities.TankEnemy;
+import entities.Brute;
+import entities.FlamingSkull;
+import entities.Zombie;
+import entities.Rat;
+import entities.Rabid;
 
 public class WaveManager {
     private final List<Enemy> enemies;
@@ -24,10 +27,73 @@ public class WaveManager {
         this.enemies = enemies;
         this.player = player;
 
-        // Fast enemy: increases by 5 each wave
-        blueprint.addRule(blueprint.new ConditionalSpawnRule(FastEnemy.class, waveNum -> waveNum * 5));
-        // Tank enemy: increases by ceil(sqrt(waveNum))
-        blueprint.addRule(blueprint.new ConditionalSpawnRule(TankEnemy.class, waveNum -> (int) Math.ceil(Math.sqrt(waveNum))));
+        // Zombie enemy: 15 * 1.15 ^ waveNum
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(Zombie.class, waveNum -> (int) (15 * Math.pow(1.15, waveNum))));
+        // Brute enemy: increases by ceil(sqrt(waveNum))
+        blueprint.addRule(
+            blueprint.new ConditionalSpawnRule(
+                Brute.class,
+                waveNum -> {
+                    if (waveNum <= 5)
+                        return 0; // too early, don't spawn
+
+                    // 1 in 5 chance
+                    if (Math.random() > 0.2)
+                        return 0;
+
+                    // Spawn amount
+                    return (int) Math.ceil(Math.sqrt(waveNum) + 1);
+                }
+            )
+        );
+        // Flaming Skull enemy: one in 6 chnace to spawn. (waveNum^2 / 4) + 10
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(
+                FlamingSkull.class,
+                waveNum -> {
+                    if (waveNum <= 3)
+                        return 0; // too early, don't spawn
+
+                    // 1 in 6 chance
+                    if (Math.random() > (1.0 / 6.0))
+                        return 0;
+
+                    // Spawn amount
+                    return (int) Math.ceil(40 * (1 - Math.exp(-0.12 * waveNum)));
+                }
+            )
+        );
+        // Rat enemy: one in 10 chance to spawn. (waveNum^2 / 3) + 20
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(
+                Rat.class,
+                waveNum -> {
+                    if (waveNum <= 5)
+                        return 0; // too early, don't spawn
+
+                    // 1 in 10 chance
+                    if (Math.random() > (1.0 / 10.0))
+                        return 0;
+
+                    // Spawn amount
+                    return (int) Math.ceil(25 * (1 - Math.exp(-0.10 * waveNum)));
+                }
+            )
+        );
+        // Rabid enemy: one in 8 chance to spawn. (waveNum^2 / 5) + 10
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(
+                Rabid.class,
+                waveNum -> {
+                    if (waveNum <= 5)
+                        return 0; // too early, don't spawn
+
+                    // 1 in 8 chance
+                    if (Math.random() > (1.0 / 8.0))
+                        return 0;
+
+                    // Spawn amount
+                    return (int) Math.ceil(30 * (1 - Math.exp(-0.11 * waveNum)));
+                }
+            )
+        );
     }
 
     public void startWave(Wave wave) {

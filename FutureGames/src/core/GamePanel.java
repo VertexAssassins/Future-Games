@@ -27,7 +27,6 @@ public class GamePanel extends JPanel {
     private Rectangle shopButton;
     private Rectangle quitButton;
     private Rectangle continueButton;
-    private Rectangle resetProgressButton;
     private final ShopPanel shopPanel = new ShopPanel();
     private boolean mouseDown = false;
     private Point mousePos = new Point(0, 0);
@@ -141,6 +140,12 @@ public class GamePanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 mousePos = e.getPoint();
+            }
+        });
+        addMouseWheelListener(e -> {
+            if (gameState == GameState.SHOP) {
+                shopPanel.handleScroll(e.getWheelRotation());
+                repaint();
             }
         });
     }

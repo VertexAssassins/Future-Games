@@ -9,6 +9,8 @@ import weapons.WeaponUnlockManager;
 
 public class ShopPanel {
     private final List<ShopItem> items;
+    private int scrollOffset = 0;
+    private int maxScroll = 0;
 
     public ShopPanel() {
         items = new ArrayList<>();
@@ -26,12 +28,17 @@ public class ShopPanel {
         g.setFont(new Font("Arial", Font.BOLD, 36));
         g.drawString("Weapon Shop", width / 2 - 120, 80);
 
-        int y = 150;
+        int y = 150 - scrollOffset;
 
         for (ShopItem item : items) {
             drawItem(g, item, player, 100, y);
             y += 120;
         }
+
+        // Update max scroll
+        int contentHeight = items.size() * 120;
+        int visibleHeight = height - 200;
+        maxScroll = Math.max(0, contentHeight - visibleHeight);
     }
 
     private void drawItem(Graphics g, ShopItem item, Player player, int x, int y) {
@@ -62,8 +69,15 @@ public class ShopPanel {
         }
     }
 
+    public void handleScroll(int rotation) {
+        scrollOffset += rotation * 30; // scroll speed
+
+        // Clamp
+        scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
+    }
+
     public void handleClick(int mx, int my, Player player) {
-    int y = 150;
+    int y = 150 - scrollOffset;
 
         for (ShopItem item : items) {
             Rectangle button = new Rectangle(350, y + 20, 120, 40);
