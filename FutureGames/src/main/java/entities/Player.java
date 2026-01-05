@@ -3,11 +3,16 @@ package entities;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 import core.PersistenceManager;
 import utils.Constants;
+import utils.PlayerAnimationSet;
+import weapons.WeaponType;
+import utils.Animation;
 
 public class Player {
     private double x = 300, y = 200;
@@ -46,20 +51,21 @@ public class Player {
     private double knockbackVY = 0;
     private double knockbackDecay = 0.85; // decay factor per frame
 
-    private BufferedImage sprite;
+    private Animation currentAnimation;
+    private Map<String, PlayerAnimationSet> animationSets = new HashMap<>();
+    private PlayerAnimationSet currentSet;
+
+    private boolean facingRight = true;
 
     public Player() {
         applyModifiers(1.0, 1.0); // default: no modifiers
 
         points = PersistenceManager.load("points", 0);
 
-        try {
-            sprite = ImageIO.read(getClass().getResource("/player/pistol/player.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            // fallback: keep rectangle
-            sprite = null;
-        }
+        loadAnimations();
+        setWeaponAnimation(WeaponType.HANDGUN);
+        currentAnimation = currentSet.idle;
+
     }
 
     public void setPosition(double x, double y) {
@@ -189,26 +195,139 @@ public class Player {
 
         x = core.WorldManager.wrapX(x);
         y = core.WorldManager.wrapY(y);
+
+        boolean moving = (up || down || left || right);
+
+        if (moving) {
+            currentAnimation = currentSet.walk;
+        } else {
+            currentAnimation = currentSet.idle;
+        }
+
+        currentAnimation.update();
     }
 
+    private void loadAnimations() {
+        animationSets.put("pistol", new PlayerAnimationSet(
+            loadAnimation("/player/pistol/idle.png", 2, 10),
+            loadAnimation("/player/pistol/idle.png", 2, 6)
+        ));
+
+        animationSets.put("revolver", new PlayerAnimationSet(
+            loadAnimation("/player/revolver/idle.png", 2, 10),
+            loadAnimation("/player/revolver/idle.png", 2, 6)
+        ));
+
+        animationSets.put("shotgun", new PlayerAnimationSet(
+            loadAnimation("/player/shotgun/idle.png", 2, 10),
+            loadAnimation("/player/shotgun/idle.png", 2, 6)
+        ));
+
+        animationSets.put("smg", new PlayerAnimationSet(
+            loadAnimation("/player/smg/idle.png", 2, 10),
+            loadAnimation("/player/smg/idle.png", 2, 6)
+        ));
+
+        animationSets.put("assaultrifle", new PlayerAnimationSet(
+            loadAnimation("/player/assaultrifle/idle.png", 2, 10),
+            loadAnimation("/player/assaultrifle/idle.png", 2, 6)
+        ));
+
+        animationSets.put("autoshotgun", new PlayerAnimationSet(
+            loadAnimation("/player/autoshotgun/idle.png", 2, 10),
+            loadAnimation("/player/autoshotgun/idle.png", 2, 6)
+        ));
+
+        animationSets.put("lmg", new PlayerAnimationSet(
+            loadAnimation("/player/lmg/idle.png", 2, 10),
+            loadAnimation("/player/lmg/idle.png", 2, 6)
+        ));
+    }
+
+    public void setWeaponAnimation(WeaponType type) {
+    String key = switch (type) {
+        case HANDGUN -> "pistol";
+        case REVOLVER -> "revolver";
+        case SHOTGUN -> "shotgun";
+        case SMG -> "smg";
+        case ASSAULTRIFLE -> "assaultrifle";
+        case AUTOSHOTGUN -> "autoshotgun";
+        case LMG -> "lmg"; // or "minigun" if you rename folder
+    };
+
+    PlayerAnimationSet set = animationSets.get(key);
+
+    if (set == null) {
+        System.err.println("No animation set for weapon: " + key);
+        return;
+    }
+
+    currentSet = set;
+    currentSet.idle.reset();
+    currentSet.walk.reset();
+}
+
+    private Animation loadAnimation(String path, int frameCount, int speed) {
+        try {
+            BufferedImage sheet = ImageIO.read(getClass().getResource(path));
+            int frameWidth = sheet.getWidth() / frameCount;
+            int frameHeight = sheet.getHeight();
+
+            BufferedImage[] frames = new BufferedImage[frameCount];
+
+            for (int i = 0; i < frameCount; i++) {
+                frames[i] = sheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+            }
+
+            return new Animation(frames, speed);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void updateFacingDirection(double mouseX) {
+        // Player is always drawn at screen center
+        double playerScreenX = Constants.SCREEN_WIDTH / 2;
+
+        facingRight = mouseX >= playerScreenX;
+    }
 
     public void draw(Graphics g, core.CameraManager camera) {
         int drawX = Constants.SCREEN_WIDTH / 2;
         int drawY = Constants.SCREEN_HEIGHT / 2;
 
-        if (sprite != null) {
+        if (currentAnimation != null) {
             Graphics2D g2d = (Graphics2D) g.create();
 
             // Draw base sprite
-            g2d.drawImage(sprite, drawX - size / 2, drawY - size / 2, size, size, null);
+            BufferedImage frame = currentAnimation.getCurrentFrame();
+            int w = frame.getWidth();
+            int h = frame.getHeight();
+
+            // Convert center to top-left
+            int x = drawX - w / 2;
+            int y = drawY - h / 2;
+
+            if (facingRight) {
+                g2d.drawImage(frame, x, y, null);
+            } else {
+                g2d.drawImage(frame,
+                    x + w, y,      // dest top-left
+                    x,     y + h,  // dest bottom-right
+                    0, 0, w, h,    // source rectangle
+                    null
+                );
+            }
 
             // Apply red tint only to non-transparent pixels
             if (hitOverlayAlpha > 0f) {
-                BufferedImage tinted = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+                BufferedImage tinted = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
                 Graphics2D tg = tinted.createGraphics();
 
                 // Draw sprite into buffer
-                tg.drawImage(sprite, 0, 0, size, size, null);
+                tg.drawImage(frame, 0, 0, size, size, null);
 
                 // Set red tint with alpha
                 tg.setComposite(AlphaComposite.SrcAtop.derive(hitOverlayAlpha));

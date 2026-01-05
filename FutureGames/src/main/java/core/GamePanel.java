@@ -56,7 +56,7 @@ public class GamePanel extends JPanel {
             WeaponType.SMG, new SMG(this::spawnProjectile),
             WeaponType.ASSAULTRIFLE, new AssaultRifle(this::spawnProjectile),
             WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile),
-            WeaponType.MINIGUN, new Minigun(this::spawnProjectile)
+            WeaponType.LMG, new LMG(this::spawnProjectile)
         ),
         WeaponType.HANDGUN
     );
@@ -69,13 +69,34 @@ public class GamePanel extends JPanel {
         WeaponUnlockManager.unlock("pistol");
         KeyBindings.setup(this, player, index -> {
             switch (index) {
-                case 0 -> weaponManager.switchTo(WeaponType.HANDGUN);
-                case 1 -> weaponManager.switchTo(WeaponType.REVOLVER);
-                case 2 -> weaponManager.switchTo(WeaponType.SHOTGUN);
-                case 3 -> weaponManager.switchTo(WeaponType.SMG);
-                case 4 -> weaponManager.switchTo(WeaponType.ASSAULTRIFLE);
-                case 5 -> weaponManager.switchTo(WeaponType.AUTOSHOTGUN);
-                case 6 -> weaponManager.switchTo(WeaponType.MINIGUN);
+                case 0 -> {
+                    weaponManager.switchTo(WeaponType.HANDGUN);
+                    player.setWeaponAnimation(WeaponType.HANDGUN);
+                }
+                case 1 -> {
+                    weaponManager.switchTo(WeaponType.REVOLVER);
+                    player.setWeaponAnimation(WeaponType.REVOLVER);
+                }
+                case 2 -> {
+                    weaponManager.switchTo(WeaponType.SHOTGUN);
+                    player.setWeaponAnimation(WeaponType.SHOTGUN);
+                }
+                case 3 -> {
+                    weaponManager.switchTo(WeaponType.SMG);
+                    player.setWeaponAnimation(WeaponType.SMG);
+                }
+                case 4 -> {
+                    weaponManager.switchTo(WeaponType.ASSAULTRIFLE);
+                    player.setWeaponAnimation(WeaponType.ASSAULTRIFLE);
+                }
+                case 5 -> {
+                    weaponManager.switchTo(WeaponType.AUTOSHOTGUN);
+                    player.setWeaponAnimation(WeaponType.AUTOSHOTGUN);
+                }
+                case 6 -> {
+                    weaponManager.switchTo(WeaponType.LMG);
+                    player.setWeaponAnimation(WeaponType.LMG);
+                }
             }
         });
         new GameLoop(this, player, enemies, waveManager).start();
@@ -135,11 +156,13 @@ public class GamePanel extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 mousePos = e.getPoint();
+                player.updateFacingDirection(mousePos.x);
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
                 mousePos = e.getPoint();
+                player.updateFacingDirection(mousePos.x);
             }
         });
         addMouseWheelListener(e -> {

@@ -9,7 +9,7 @@ public class WeaponFactory {
             case SMG -> new SMG(spawner);
             case ASSAULTRIFLE -> new AssaultRifle(spawner);
             case AUTOSHOTGUN -> new AutoShotgun(spawner);
-            case MINIGUN -> new Minigun(spawner);
+            case LMG-> new LMG(spawner);
         };
     }
 }

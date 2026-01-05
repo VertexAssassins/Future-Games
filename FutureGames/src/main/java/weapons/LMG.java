@@ -1,8 +1,8 @@
 package weapons;
 import entities.Projectile;
 
-public class Minigun extends Weapon {
-    public Minigun(ProjectileSpawner spawner) {
+public class LMG extends Weapon {
+    public LMG(ProjectileSpawner spawner) {
         super(new WeaponStats(20, 25, 800, 40, 25, 100, 5000), spawner);
     }
 

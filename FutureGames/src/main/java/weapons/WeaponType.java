@@ -7,5 +7,5 @@ public enum WeaponType {
     SMG,
     ASSAULTRIFLE,
     AUTOSHOTGUN,
-    MINIGUN
+    LMG
 }

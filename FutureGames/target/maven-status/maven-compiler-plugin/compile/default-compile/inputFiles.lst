@@ -20,8 +20,10 @@ D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\Rat.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\Zombie.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\input\KeyBindings.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\Animation.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\CollisionResolver.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\Constants.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\PlayerAnimationSet.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\Quadtree.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\waves\Wave.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\waves\WaveBlueprint.java
@@ -29,7 +31,7 @@ D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\waves\Wav
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\AssaultRifle.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\AutoShotgun.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\Handgun.java
-D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\Minigun.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\LMG.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\ProjectileSpawner.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\PumpShotgun.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\weapons\Revolver.java
