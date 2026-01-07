@@ -210,37 +210,37 @@ public class Player {
     private void loadAnimations() {
         animationSets.put("pistol", new PlayerAnimationSet(
             loadAnimation("/player/pistol/idle.png", 2, 10),
-            loadAnimation("/player/pistol/idle.png", 2, 6)
+            loadAnimation("/player/pistol/walk.png", 4, 6)
         ));
 
         animationSets.put("revolver", new PlayerAnimationSet(
             loadAnimation("/player/revolver/idle.png", 2, 10),
-            loadAnimation("/player/revolver/idle.png", 2, 6)
+            loadAnimation("/player/revolver/walk.png", 4, 6)
         ));
 
         animationSets.put("shotgun", new PlayerAnimationSet(
             loadAnimation("/player/shotgun/idle.png", 2, 10),
-            loadAnimation("/player/shotgun/idle.png", 2, 6)
+            loadAnimation("/player/shotgun/walk.png", 4, 6)
         ));
 
         animationSets.put("smg", new PlayerAnimationSet(
             loadAnimation("/player/smg/idle.png", 2, 10),
-            loadAnimation("/player/smg/idle.png", 2, 6)
+            loadAnimation("/player/smg/walk.png", 4, 6)
         ));
 
         animationSets.put("assaultrifle", new PlayerAnimationSet(
             loadAnimation("/player/assaultrifle/idle.png", 2, 10),
-            loadAnimation("/player/assaultrifle/idle.png", 2, 6)
+            loadAnimation("/player/assaultrifle/walk.png", 4, 6)
         ));
 
         animationSets.put("autoshotgun", new PlayerAnimationSet(
             loadAnimation("/player/autoshotgun/idle.png", 2, 10),
-            loadAnimation("/player/autoshotgun/idle.png", 2, 6)
+            loadAnimation("/player/autoshotgun/walk.png", 4, 6)
         ));
 
         animationSets.put("lmg", new PlayerAnimationSet(
             loadAnimation("/player/lmg/idle.png", 2, 10),
-            loadAnimation("/player/lmg/idle.png", 2, 6)
+            loadAnimation("/player/lmg/walk.png", 4, 6)
         ));
     }
 
