@@ -47,6 +47,7 @@ protected BufferedImage sprite;
     protected int size = 40;
     protected Color color = Color.MAGENTA;
     protected double colliderRadius = size * .75;
+    protected boolean facingRight = true;
 
     public double getX() { return worldX; }
     public double getY() { return worldY; }
@@ -97,8 +98,13 @@ protected BufferedImage sprite;
     }
 
     public void setPosition(double x, double y) {
-    this.worldX = x;
-    this.worldY = y;
+        this.worldX = x;
+        this.worldY = y;
+    }
+
+    protected void updateFacingDirection(double vx) {
+        if (vx > 0) facingRight = true;
+        else if (vx < 0) facingRight = false;
     }
 
     public void updateMovement(Player player) {
@@ -117,6 +123,8 @@ protected BufferedImage sprite;
 
             worldX += (normX * speed);
             worldY += (normY * speed);
+
+            updateFacingDirection(normX);
         }
 
         worldX = WorldManager.wrapX(worldX);
@@ -172,8 +180,8 @@ protected BufferedImage sprite;
 
             //DEBUG COLLIDER RADIUS
                 int r = (int) getColliderRadius();
-                int centerX = drawX + size / 2;
-                int centerY = drawY + size / 2;
+                int centerX = drawX;
+                int centerY = drawY;
 
                 g.setColor(Color.RED);
                 g.drawOval(centerX - r, centerY - r, r * 2, r * 2);
@@ -183,7 +191,23 @@ protected BufferedImage sprite;
                     Graphics2D g2d = (Graphics2D) g.create();
 
                     // Draw base sprite
-                    g2d.drawImage(sprite, drawX, drawY, size, size, null);
+                    int w = size;
+                    int h = size;
+
+                    // Center the sprite
+                    int x = drawX - size / 2;
+                    int y = drawY - size / 2;
+
+                    if (facingRight) {
+                        g2d.drawImage(sprite, x, y, w, h, null);
+                    } else {
+                        g2d.drawImage(sprite,
+                            x + w, y,      // dest top-left
+                            x,     y + h,  // dest bottom-right
+                            0, 0, sprite.getWidth(), sprite.getHeight(),
+                            null
+                        );
+                    }
 
                     // Apply red tint only to non-transparent pixels
                     if (hitOverlayAlpha > 0f) {
@@ -196,7 +220,7 @@ protected BufferedImage sprite;
                         tg.fillRect(0, 0, size, size);
                         tg.dispose();
 
-                        g2d.drawImage(tinted, drawX, drawY, null);
+                        g2d.drawImage(tinted, x, y, w, h, null);
                     }
 
                     g2d.dispose();
@@ -220,13 +244,8 @@ protected BufferedImage sprite;
         return points;
     }
 
-    public double getCenterX() {
-        return worldX + size / 2.0;
-    }
-
-    public double getCenterY() {
-        return worldY + size / 2.0;
-    }
+    public double getCenterX() { return worldX; }
+    public double getCenterY() { return worldY; }
 
     public Rectangle getBounds() {
         int r = (int)getColliderRadius();

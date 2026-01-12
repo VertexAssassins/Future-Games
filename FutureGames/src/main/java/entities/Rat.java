@@ -1,10 +1,20 @@
 package entities;
 
 import java.awt.*;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 public class Rat extends Enemy {
     public Rat(double worldX, double worldY) {
         super(worldX, worldY);
+
+        try {
+                setSprite(ImageIO.read(getClass().getResource("/enemies/rat/rat.png")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         baseSpeed = 2.5;
         baseDamage = 1;
         baseHealth = 1.0;

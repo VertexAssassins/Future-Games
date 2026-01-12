@@ -10,7 +10,7 @@ public class Zombie extends Enemy {
         super(worldX, worldY);
 
             try {
-                setSprite(ImageIO.read(getClass().getResource("/enemies/zombie/fastenemy.png")));
+                setSprite(ImageIO.read(getClass().getResource("/enemies/zombie/zombie.png")));
             } catch (IOException e) {
                 e.printStackTrace();
             }
