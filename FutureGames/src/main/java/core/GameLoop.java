@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import entities.Player;
 import entities.Projectile;
 import utils.Constants;
+import utils.MusicManager;
 import utils.Quadtree;
 import waves.WaveManager;
 import entities.Enemy;
@@ -18,12 +19,14 @@ public class GameLoop extends Thread {
     private final List<Enemy> enemies;
     private final WaveManager waveManager;
     private boolean running = true;
+    private final MusicManager musicManager;
 
-    public GameLoop(GamePanel panel, Player player, List<Enemy> enemies, WaveManager waveManager) {
+    public GameLoop(GamePanel panel, Player player, List<Enemy> enemies, WaveManager waveManager, MusicManager musicManager) {
         this.panel = panel;
         this.player = player;
         this.enemies = enemies;
         this.waveManager = waveManager;
+        this.musicManager = musicManager;
     }
 
     @Override
@@ -36,23 +39,33 @@ public class GameLoop extends Thread {
 
         while (running) {
             long now = System.nanoTime();
-            delta += (now - lastTime) / nsPerFrame;
+            double frameDelta = (now - lastTime) / nsPerFrame;
             lastTime = now;
 
+            // Only accumulate delta while actively playing
+            if (panel.getGameState() == GameState.PLAYING) {
+                delta += frameDelta;
+            }
+
+            // Handle death → GAME_OVER
             if (!player.isAlive() && panel.getGameState() == GameState.PLAYING) {
                 panel.setGameState(GameState.GAME_OVER);
             }
 
-            while (delta >= 1) {
-                updateGameLogic();
-                delta--;
+            // Advance game logic only in PLAYING
+            if (panel.getGameState() == GameState.PLAYING) {
+                while (delta >= 1.0) {
+                    updateGameLogic();
+                    delta -= 1.0;
+                }
             }
 
+            // Always repaint current state (PLAYING, PAUSED, SHOP, GAME_OVER)
             panel.repaint();
             frames++;
 
             if (System.currentTimeMillis() - timer >= 1000) {
-                System.out.println("FPS: " + frames);
+                System.out.println("FPS: " + frames + " | state=" + panel.getGameState());
                 frames = 0;
                 timer += 1000;
             }

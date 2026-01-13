@@ -9,8 +9,11 @@ import entities.Enemy;
 import entities.Player;
 import entities.Projectile;
 import input.KeyBindings;
+import utils.MusicManager;
+import utils.Sound;
 import waves.WaveManager;
 import weapons.*;
+import utils.UISlider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +30,21 @@ public class GamePanel extends JPanel {
     private Rectangle shopButton;
     private Rectangle quitButton;
     private Rectangle continueButton;
+    // Pause menu UI
+    private Rectangle resumeButton;
+    private Rectangle pauseQuitButton;
+    private UISlider musicSlider;
+    private UISlider sfxSlider;
     private final ShopPanel shopPanel = new ShopPanel();
     private boolean mouseDown = false;
     private Point mousePos = new Point(0, 0);
+    private boolean draggingMusic = false;
+    private boolean draggingSfx = false;
     public boolean isMouseDown() { return mouseDown; }
     public Point getMousePos() { return mousePos; }
     public WeaponManager getWeaponManager() { return weaponManager; }
+    private final MusicManager musicManager = new MusicManager();
+    public MusicManager getMusicManager() { return musicManager; }
 
     public GameState getGameState() {
         return gameState;
@@ -65,7 +77,29 @@ public class GamePanel extends JPanel {
         setDoubleBuffered(true);
         setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.BLACK);
+
+        // Initialize pause menu UI
+        resumeButton = new Rectangle(0, 0, 0, 0);       // will be positioned in paintComponent
+        pauseQuitButton = new Rectangle(0, 0, 0, 0);
+
+        musicSlider = new UISlider(0, 0, 200, 1.0f);    // default full volume
+        sfxSlider   = new UISlider(0, 0, 200, 1.0f);
+
         setFocusable(true);
+
+        // Key binding for ESC (pause toggle)
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "togglePause"
+        );
+
+        getActionMap().put("togglePause", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                togglePause();
+            }
+        });
+
         WeaponUnlockManager.unlock("pistol");
         KeyBindings.setup(this, player, index -> {
             switch (index) {
@@ -99,7 +133,7 @@ public class GamePanel extends JPanel {
                 }
             }
         });
-        new GameLoop(this, player, enemies, waveManager).start();
+        new GameLoop(this, player, enemies, waveManager, musicManager).start();
 
             // Handle shooting
             addMouseListener(new MouseAdapter() {
@@ -139,6 +173,37 @@ public class GamePanel extends JPanel {
                     return;
                 }
 
+                // --- PAUSE MENU INTERACTION ---
+                if (gameState == GameState.PAUSED) {
+
+                    if (resumeButton.contains(mx, my)) {
+                        gameState = GameState.PLAYING;
+                        return;
+                    }
+
+                    if (pauseQuitButton.contains(mx, my)) {
+                        System.exit(0);
+                    }
+
+                    if (musicSlider.contains(mx, my)) {
+                        draggingMusic = true;
+                        musicSlider.setFromMouse(mx);
+                        musicManager.setVolume(musicSlider.value);
+                        repaint();
+                        return;
+                    }
+
+                    if (sfxSlider.contains(mx, my)) {
+                        draggingSfx = true;
+                        sfxSlider.setFromMouse(mx);
+                        Sound.globalSfxVolume = sfxSlider.value;
+                        repaint();
+                        return;
+                    }
+
+                    return;
+                }
+
                 // --- NORMAL GAME SHOOTING ---
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     mouseDown = true;
@@ -149,9 +214,12 @@ public class GamePanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     mouseDown = false;
+                    draggingMusic = false;
+                    draggingSfx = false;
                 }
             }
         });
+
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -160,17 +228,42 @@ public class GamePanel extends JPanel {
             }
 
             @Override
-            public void mouseDragged(MouseEvent e) {
-                mousePos = e.getPoint();
-                player.updateFacingDirection(mousePos.x);
-            }
+                public void mouseDragged(MouseEvent e) {
+                    mousePos = e.getPoint();
+                    player.updateFacingDirection(mousePos.x);
+
+                    if (gameState == GameState.PAUSED) {
+                        int mx = e.getX();
+
+                        if (draggingMusic) {
+                            musicSlider.setFromMouse(mx);
+                            musicManager.setVolume(musicSlider.value);
+                            repaint();
+                        }
+
+                        if (draggingSfx) {
+                            sfxSlider.setFromMouse(mx);
+                            Sound.globalSfxVolume = sfxSlider.value;
+                            repaint();
+                        }
+                    }
+                }
         });
+
         addMouseWheelListener(e -> {
             if (gameState == GameState.SHOP) {
                 shopPanel.handleScroll(e.getWheelRotation());
                 repaint();
             }
         });
+    }
+
+    private void togglePause() {
+        if (gameState == GameState.PLAYING) {
+            gameState = GameState.PAUSED;
+        } else if (gameState == GameState.PAUSED) {
+            gameState = GameState.PLAYING;
+        }
     }
 
     public void attemptShoot() {
@@ -189,6 +282,24 @@ public class GamePanel extends JPanel {
    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        if (gameState == GameState.PAUSED) {
+            // Update pause UI positions dynamically
+            int cx = getWidth() / 2;
+            int cy = getHeight() / 2;
+
+            resumeButton = new Rectangle(cx - 100, cy - 40, 200, 50);
+            pauseQuitButton = new Rectangle(cx - 100, cy + 30, 200, 50);
+
+            musicSlider.x = cx - 120;
+            musicSlider.y = cy + 110;
+
+            sfxSlider.x = cx - 120;
+            sfxSlider.y = cy + 160;
+
+            drawPauseMenu(g);
+            return;
+        }
 
         // Draw player
         player.draw(g, camera);
@@ -274,6 +385,43 @@ public class GamePanel extends JPanel {
         retryButton = new Rectangle(getWidth() / 2 - 100, getHeight() / 2, 200, 50);
         shopButton  = new Rectangle(getWidth() / 2 - 100, getHeight() / 2 + 70, 200, 50);
         quitButton  = new Rectangle(getWidth() / 2 - 100, getHeight() / 2 + 140, 200, 50);
+    }
+
+    private void drawPauseMenu(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        // Dim background
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRect(0, 0, getWidth(), getHeight());
+
+        // Menu box
+        g2.setColor(Color.WHITE);
+        g2.fillRoundRect(getWidth()/2 - 180, getHeight()/2 - 180, 360, 360, 20, 20);
+
+        g2.setColor(Color.BLACK);
+        g2.setFont(new Font("Arial", Font.BOLD, 32));
+        g2.drawString("PAUSED", getWidth()/2 - 60, getHeight()/2 - 120);
+
+        // Resume button
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.fill(resumeButton);
+        g2.setColor(Color.BLACK);
+        g2.draw(resumeButton);
+        g2.drawString("Resume", resumeButton.x + 55, resumeButton.y + 32);
+
+        // Quit button
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.fill(pauseQuitButton);
+        g2.setColor(Color.BLACK);
+        g2.draw(pauseQuitButton);
+        g2.drawString("Quit", pauseQuitButton.x + 75, pauseQuitButton.y + 32);
+
+        // Sliders
+        g2.drawString("Music Volume", getWidth()/2 - 60, getHeight()/2 + 100);
+        musicSlider.draw(g2);
+
+        g2.drawString("SFX Volume", getWidth()/2 - 50, getHeight()/2 + 150);
+        sfxSlider.draw(g2);
     }
 
     public List<Projectile> getProjectiles() {

@@ -1,9 +1,11 @@
 core\StartScreen.class
+utils\MusicTrack.class
 utils\Quadtree.class
 core\GameLoop.class
 waves\Wave$SpawnRequest.class
 weapons\AutoShotgun.class
 entities\Projectile.class
+utils\UISlider.class
 waves\WaveManager.class
 weapons\WeaponType.class
 core\GamePanel$2.class
@@ -28,6 +30,7 @@ input\KeyBindings$1.class
 entities\Zombie.class
 waves\Wave.class
 weapons\SMG.class
+core\GamePanel$3.class
 waves\WaveBlueprint.class
 weapons\WeaponStats.class
 core\CameraManager.class
@@ -48,6 +51,7 @@ weapons\Revolver.class
 weapons\Handgun.class
 waves\WaveBlueprint$ConditionalSpawnRule.class
 core\GameState.class
+utils\MusicManager.class
 weapons\AssaultRifle.class
 entities\Rabid.class
 input\KeyBindings$4.class

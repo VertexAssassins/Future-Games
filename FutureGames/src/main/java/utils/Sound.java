@@ -7,6 +7,8 @@ public class Sound {
     private byte[] audioData;
     private AudioFormat format;
 
+    public static float globalSfxVolume = 1.0f;
+
     public Sound(String path) {
         try {
             URL url = getClass().getResource(path);
@@ -45,8 +47,19 @@ public class Sound {
 
                 SourceDataLine line = AudioSystem.getSourceDataLine(pitchedFormat);
                 line.open(pitchedFormat);
-                line.start();
 
+                // 🔊 Apply global SFX volume
+                if (line.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                    FloatControl gain = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+
+                    float volume = globalSfxVolume;
+                    if (volume < 0.0001f) volume = 0.0001f;
+
+                    float dB = (float)(Math.log10(volume) * 20);
+                    gain.setValue(dB);
+                }
+
+                line.start();
                 line.write(audioData, 0, audioData.length);
                 line.drain();
                 line.close();
