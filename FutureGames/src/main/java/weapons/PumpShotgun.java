@@ -1,10 +1,14 @@
 package weapons;
 import entities.Projectile;
+import utils.Sound;
 
 public class PumpShotgun extends Weapon {
 
     public PumpShotgun(ProjectileSpawner spawner) {
         super(new WeaponStats(8, 30, 400, 10, 1, 2, 2500), spawner);
+
+        setFireSound(new Sound("/player/shotgun/shotgunShoot.wav"));
+        setReloadSound(new Sound("/player/shotgun/shotgunReload.wav"));
     }
 
     @Override

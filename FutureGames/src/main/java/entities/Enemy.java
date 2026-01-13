@@ -3,6 +3,8 @@ package entities;
 import java.awt.*;
 
 import utils.Constants;
+import utils.Sound;
+
 import java.awt.image.BufferedImage;
 
 import core.CameraManager;
@@ -19,6 +21,8 @@ protected BufferedImage sprite;
     private float hitOverlayAlpha = 0f;
     private final float maxOverlayAlpha = 0.8f;
     private final float overlayFadeSpeed = 0.1f; // fade per frame
+
+    private static final Sound IMPACT_SOUND = new Sound("/enemies/audio/hit.wav");
 
     // Baseline stats
     protected double baseSpeed;
@@ -255,6 +259,9 @@ protected BufferedImage sprite;
     public void takeDamage(double amount) {
         health -= amount;
         hitOverlayAlpha = maxOverlayAlpha;
+
+        float pitch = 1.0f + (float)(Math.random() * 0.1 - 0.10); // ±5%
+        IMPACT_SOUND.play(pitch);
     }
 
     public boolean isAlive() {

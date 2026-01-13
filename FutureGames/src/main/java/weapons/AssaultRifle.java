@@ -1,9 +1,13 @@
 package weapons;
 import entities.Projectile;
+import utils.Sound;
 
 public class AssaultRifle extends Weapon {
     public AssaultRifle(ProjectileSpawner spawner) {
         super(new WeaponStats(10, 10, 800, 20, 7.5, 45, 2000), spawner);
+
+        setFireSound(new Sound("/player/assaultrifle/assaultrifleShoot.wav"));
+        setReloadSound(new Sound("/player/assaultrifle/assaultrifleReload.wav"));
     }
 
     @Override

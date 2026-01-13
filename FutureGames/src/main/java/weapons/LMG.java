@@ -1,9 +1,13 @@
 package weapons;
 import entities.Projectile;
+import utils.Sound;
 
 public class LMG extends Weapon {
     public LMG(ProjectileSpawner spawner) {
         super(new WeaponStats(20, 25, 800, 40, 25, 100, 5000), spawner);
+
+        setFireSound(new Sound("/player/lmg/lmgShoot.wav"));
+        setReloadSound(new Sound("/player/lmg/lmgReload.wav"));
     }
 
     @Override

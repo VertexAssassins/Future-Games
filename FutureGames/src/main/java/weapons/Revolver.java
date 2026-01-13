@@ -1,9 +1,13 @@
 package weapons;
 import entities.Projectile;
+import utils.Sound;
 
 public class Revolver extends Weapon {
     public Revolver(ProjectileSpawner spawner) {
         super(new WeaponStats(8, 12, 400, 10, 1.5, 6, 4000), spawner);
+
+        setFireSound(new Sound("/player/revolver/revolverShoot.wav"));
+        setReloadSound(new Sound("/player/revolver/revolverReload.wav"));
     }
 
     @Override
