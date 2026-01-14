@@ -25,6 +25,9 @@ public class GamePanel extends JPanel {
     private final List<Enemy> enemies = new ArrayList<>();
     private final WaveManager waveManager = new WaveManager(enemies, player);
     private final List<Projectile> projectiles = new ArrayList<>();
+    private final GameRenderer renderer = new GameRenderer(this);
+    private final MusicManager musicManager = new MusicManager();
+    
     private GameState gameState = GameState.PLAYING;
     private Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
     private Rectangle shopButton;
@@ -40,11 +43,28 @@ public class GamePanel extends JPanel {
     private Point mousePos = new Point(0, 0);
     private boolean draggingMusic = false;
     private boolean draggingSfx = false;
+
     public boolean isMouseDown() { return mouseDown; }
     public Point getMousePos() { return mousePos; }
     public WeaponManager getWeaponManager() { return weaponManager; }
-    private final MusicManager musicManager = new MusicManager();
     public MusicManager getMusicManager() { return musicManager; }
+    public Player getPlayer() { return player; }
+    public CameraManager getCamera() { return camera; }
+    public List<Enemy> getEnemies() { return enemies; }
+    public WaveManager getWaveManager() { return waveManager; }
+
+    public Rectangle getResumeButton() { return resumeButton; }
+    public Rectangle getPauseQuitButton() { return pauseQuitButton; }
+
+    public UISlider getMusicSlider() { return musicSlider; }
+    public UISlider getSfxSlider() { return sfxSlider; }
+
+    public Rectangle getRetryButton() { return retryButton; }
+    public Rectangle getShopButton() { return shopButton; }
+    public Rectangle getQuitButton() { return quitButton; }
+    public Rectangle getContinueButton() { return continueButton; }
+
+    public ShopPanel getShopPanel() { return shopPanel; }
 
     public GameState getGameState() {
         return gameState;
@@ -279,15 +299,20 @@ public class GamePanel extends JPanel {
         }
     }
 
-   @Override
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (gameState == GameState.PAUSED) {
-            // Update pause UI positions dynamically
-            int cx = getWidth() / 2;
-            int cy = getHeight() / 2;
+        updateUIRectangles();   // <-- ADD THIS
 
+        renderer.render(g);
+    }
+
+    public void updateUIRectangles() {
+        int cx = getWidth() / 2;
+        int cy = getHeight() / 2;
+
+        if (gameState == GameState.PAUSED) {
             resumeButton = new Rectangle(cx - 100, cy - 40, 200, 50);
             pauseQuitButton = new Rectangle(cx - 100, cy + 30, 200, 50);
 
@@ -296,132 +321,17 @@ public class GamePanel extends JPanel {
 
             sfxSlider.x = cx - 120;
             sfxSlider.y = cy + 160;
-
-            drawPauseMenu(g);
-            return;
-        }
-
-        // Draw player
-        player.draw(g, camera);
-
-        // Draw projectiles
-        synchronized (projectiles) {
-            for (Projectile p : projectiles) {
-                p.draw(g, camera.getOffsetX(), camera.getOffsetY());
-            }
-        }
-
-        // Draw enemies
-        synchronized (enemies) {
-            for (Enemy enemy : enemies) {
-                enemy.draw(g, camera);
-            }
-        }
-
-        // HUD
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.setColor(Color.WHITE);
-
-        if (gameState == GameState.PLAYING) {
-            // Wave (top-left)
-            g.drawString("Wave: " + waveManager.getWaveNumber(), 20, 30);
-
-            // Points (top-right)
-            g.drawString("Points: " + player.getPoints(), getWidth() - 150, 30);
         }
 
         if (gameState == GameState.GAME_OVER) {
-            // Final score (center)
-            g.setColor(Color.YELLOW);
-            g.setFont(new Font("Arial", Font.BOLD, 40));
-            g.drawString("Final Score: " + player.getPoints(),
-                        getWidth() / 2 - 100, getHeight() / 2);
-
-            // Game Over text
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 48));
-            g.drawString("Game Over", getWidth() / 2 - 150, getHeight() / 2 - 80);
-
-            // Retry button
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(retryButton.x, retryButton.y, retryButton.width, retryButton.height);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.PLAIN, 24));
-            g.drawString("Retry", retryButton.x + 65, retryButton.y + 32);
-
-            // Shop button
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(shopButton.x, shopButton.y, shopButton.width, shopButton.height);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.PLAIN, 24));
-            g.drawString("Shop", shopButton.x + 70, shopButton.y + 32);
-
-            // Quit button
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(quitButton.x, quitButton.y, quitButton.width, quitButton.height);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.PLAIN, 24));
-            g.drawString("Quit", quitButton.x + 75, quitButton.y + 32);
-
+            retryButton = new Rectangle(cx - 100, cy, 200, 50);
+            shopButton  = new Rectangle(cx - 100, cy + 70, 200, 50);
+            quitButton  = new Rectangle(cx - 100, cy + 140, 200, 50);
         }
 
         if (gameState == GameState.SHOP) {
-            shopPanel.draw(g, player, getWidth(), getHeight());
-
-            // Continue button (bottom-right)
             continueButton = new Rectangle(getWidth() - 220, getHeight() - 80, 200, 50);
-
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(continueButton.x, continueButton.y, continueButton.width, continueButton.height);
-
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.PLAIN, 24));
-            g.drawString("Continue", continueButton.x + 50, continueButton.y + 32);
-
-            return; // skip drawing game world
         }
-
-        // Update retry button position
-        retryButton = new Rectangle(getWidth() / 2 - 100, getHeight() / 2, 200, 50);
-        shopButton  = new Rectangle(getWidth() / 2 - 100, getHeight() / 2 + 70, 200, 50);
-        quitButton  = new Rectangle(getWidth() / 2 - 100, getHeight() / 2 + 140, 200, 50);
-    }
-
-    private void drawPauseMenu(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-
-        // Dim background
-        g2.setColor(new Color(0, 0, 0, 150));
-        g2.fillRect(0, 0, getWidth(), getHeight());
-
-        // Menu box
-        g2.setColor(Color.WHITE);
-        g2.fillRoundRect(getWidth()/2 - 180, getHeight()/2 - 180, 360, 360, 20, 20);
-
-        g2.setColor(Color.BLACK);
-        g2.setFont(new Font("Arial", Font.BOLD, 32));
-        g2.drawString("PAUSED", getWidth()/2 - 60, getHeight()/2 - 120);
-
-        // Resume button
-        g2.setColor(Color.LIGHT_GRAY);
-        g2.fill(resumeButton);
-        g2.setColor(Color.BLACK);
-        g2.draw(resumeButton);
-        g2.drawString("Resume", resumeButton.x + 55, resumeButton.y + 32);
-
-        // Quit button
-        g2.setColor(Color.LIGHT_GRAY);
-        g2.fill(pauseQuitButton);
-        g2.setColor(Color.BLACK);
-        g2.draw(pauseQuitButton);
-        g2.drawString("Quit", pauseQuitButton.x + 75, pauseQuitButton.y + 32);
-
-        // Sliders
-        g2.drawString("Music Volume", getWidth()/2 - 60, getHeight()/2 + 100);
-        musicSlider.draw(g2);
-
-        g2.drawString("SFX Volume", getWidth()/2 - 50, getHeight()/2 + 150);
-        sfxSlider.draw(g2);
     }
 
     public List<Projectile> getProjectiles() {

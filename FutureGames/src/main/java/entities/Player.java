@@ -139,6 +139,10 @@ public class Player {
         return health > 0;
     }
 
+    public double getMaxHealth() {
+        return maxHealth;
+    }
+
     public double getX() { return x; }
     public double getY() { return y; }
     public int getSize() { return size; }

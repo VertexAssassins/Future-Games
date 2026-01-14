@@ -15,6 +15,7 @@ weapons\PumpShotgun.class
 weapons\WeaponFactory.class
 entities\Player.class
 entities\Player$1.class
+core\GameRenderer$1.class
 core\ShopItem.class
 core\GamePanel.class
 entities\Brute.class
@@ -42,6 +43,7 @@ core\WorldManager.class
 utils\CollisionResolver.class
 core\GamePanel$1.class
 core\ShopPanel.class
+core\GameRenderer.class
 core\PersistenceManager.class
 entities\FlamingSkull.class
 core\GameFrame.class
