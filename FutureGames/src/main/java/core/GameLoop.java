@@ -9,6 +9,7 @@ import utils.MusicManager;
 import utils.Quadtree;
 import waves.WaveManager;
 import entities.Enemy;
+import entities.HealthPickup;
 
 public class GameLoop extends Thread {
     private static final int TARGET_FPS = 60;
@@ -97,6 +98,7 @@ public class GameLoop extends Thread {
         updateProjectiles(quadtree);
         
         applyEnemyAttacks();
+        checkPickupCollisions();
         handleEnemyDeaths();
         maybeAdvanceWave();
     }
@@ -177,10 +179,48 @@ public class GameLoop extends Thread {
     private void handleEnemyDeaths() {
         for (Enemy e : enemies) {
             if (!e.isAlive()) {
+
+                // 5% drop chance
+                if (Math.random() < 0.05) {
+                    int amount = rollHealthAmount();
+                    panel.getHealthPickups().add(
+                        new HealthPickup(e.getX(), e.getY(), amount)
+                    );
+                }
+
                 e.onDeath(player);
             }
         }
         enemies.removeIf(e -> !e.isAlive());
+    }
+
+    private void checkPickupCollisions() {
+        List<HealthPickup> pickups = panel.getHealthPickups();
+
+        for (int i = pickups.size() - 1; i >= 0; i--) {
+            HealthPickup hp = pickups.get(i);
+
+            Rectangle playerBounds = new Rectangle(
+                (int)player.getX(),
+                (int)player.getY(),
+                player.getSize(),
+                player.getSize()
+            );
+
+            if (playerBounds.intersects(hp.getBounds())) {
+                player.heal(hp.getAmount());
+                pickups.remove(i);
+            }
+        }
+    }
+
+    private int rollHealthAmount() {
+        double r = Math.random();
+
+        if (r < 0.35) return 5;   // 35%
+        if (r < 0.65) return 10;  // next 30%
+        if (r < 0.85) return 15;  // next 20%
+        return 20;                // last 15%
     }
 
     private void maybeAdvanceWave() {

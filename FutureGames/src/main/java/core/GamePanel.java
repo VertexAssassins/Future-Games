@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import entities.Enemy;
+import entities.HealthPickup;
 import entities.Player;
 import entities.Projectile;
 import input.KeyBindings;
@@ -27,6 +28,7 @@ public class GamePanel extends JPanel {
     private final List<Projectile> projectiles = new ArrayList<>();
     private final GameRenderer renderer = new GameRenderer(this);
     private final MusicManager musicManager = new MusicManager();
+    private final List<HealthPickup> healthPickups = new ArrayList<>();
     
     private GameState gameState = GameState.PLAYING;
     private Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
@@ -52,6 +54,8 @@ public class GamePanel extends JPanel {
     public CameraManager getCamera() { return camera; }
     public List<Enemy> getEnemies() { return enemies; }
     public WaveManager getWaveManager() { return waveManager; }
+    public List<HealthPickup> getHealthPickups() { return healthPickups; }
+
 
     public Rectangle getResumeButton() { return resumeButton; }
     public Rectangle getPauseQuitButton() { return pauseQuitButton; }

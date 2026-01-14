@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entities.Enemy;
+import entities.HealthPickup;
 import entities.Player;
 import entities.Projectile;
 import waves.WaveManager;
@@ -38,6 +39,7 @@ public class GameRenderer {
         drawPlayer(g);
         drawProjectiles(g);
         drawEnemies(g);
+        drawPickups(g);
         drawHUD(g);
     }
 
@@ -66,6 +68,18 @@ public class GameRenderer {
 
         for (Enemy e : snapshot) {
             e.draw(g, panel.getCamera());
+        }
+    }
+
+    private void drawPickups(Graphics g) {
+        List<HealthPickup> snapshot;
+
+        synchronized (panel.getHealthPickups()) {
+            snapshot = new ArrayList<>(panel.getHealthPickups());
+        }
+
+        for (HealthPickup hp : snapshot) {
+            hp.draw(g, panel.getCamera());
         }
     }
 

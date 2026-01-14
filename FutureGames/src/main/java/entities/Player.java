@@ -130,6 +130,11 @@ public class Player {
         }
     }
 
+    public void heal(double amount) {
+        health += amount;
+        if (health > maxHealth) health = maxHealth;
+    }
+
     public void addPoints(int amount) {
         points += amount;
         PersistenceManager.save("points", points); // persist immediately

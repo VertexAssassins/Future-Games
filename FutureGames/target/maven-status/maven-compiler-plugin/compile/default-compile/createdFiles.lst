@@ -13,6 +13,7 @@ input\KeyBindings$WeaponSwitcher.class
 utils\Sound.class
 weapons\PumpShotgun.class
 weapons\WeaponFactory.class
+entities\HealthPickup.class
 entities\Player.class
 entities\Player$1.class
 core\GameRenderer$1.class
