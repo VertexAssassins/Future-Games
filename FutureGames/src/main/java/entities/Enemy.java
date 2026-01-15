@@ -209,6 +209,8 @@ public class Enemy {
             finalY /= len;
         }
 
+        updateFacingDirection(toPlayerX);
+
         // -----------------------------
         // 6. Apply movement
         // -----------------------------
