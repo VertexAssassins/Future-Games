@@ -7,7 +7,15 @@ import javax.imageio.ImageIO;
 
 public class FlamingSkull extends Enemy {
     public FlamingSkull(double worldX, double worldY) {
-        super(worldX, worldY);
+        super(
+            worldX, worldY,
+            5,      // desiredSpacing (none)
+            0.0,    // separationStrength (no avoidance)
+            0.0,    // noiseStrength (perfect straight line)
+            10,     // orbitRadius (must be touching to orbit)
+            0.0,    // orbitStrength (never orbit)
+            4.0     // chaseStrength (hyper-aggressive)
+        );
 
         try {
                 setSprite(ImageIO.read(getClass().getResource("/enemies/flamingSkull/flamingSkull.png")));
@@ -15,7 +23,7 @@ public class FlamingSkull extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 3;
+        baseSpeed = 2.1;
         baseDamage = 5;
         baseHealth = 10.0;
         baseAttackCooldown = 1500;

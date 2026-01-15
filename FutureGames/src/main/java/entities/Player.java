@@ -25,7 +25,7 @@ public class Player {
     private final float overlayFadeSpeed = 0.1f; // fade per frame
 
     // Base stats
-    private double baseSpeed = 4.0;
+    private double baseSpeed = 2.0;
     public double baseHealth = 100.0;
 
     private long lastHitTime = 0;

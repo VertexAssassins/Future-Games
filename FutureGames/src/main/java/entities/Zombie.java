@@ -7,7 +7,15 @@ import javax.imageio.ImageIO;
 
 public class Zombie extends Enemy {
     public Zombie(double worldX, double worldY) {
-        super(worldX, worldY);
+        super(
+            worldX, worldY,
+            60,     // desiredSpacing (wide spread)
+            1.2,    // separationStrength (strong anti-clumping)
+            0.05,   // noiseStrength (slow, steady shambling)
+            200,    // orbitRadius (begin circling early)
+            0.6,    // orbitStrength (approach from all angles)
+            0.5     // chaseStrength (slow, inevitable)
+        );
 
             try {
                 setSprite(ImageIO.read(getClass().getResource("/enemies/zombie/zombie.png")));

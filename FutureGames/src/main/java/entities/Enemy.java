@@ -1,6 +1,7 @@
 package entities;
 
 import java.awt.*;
+import java.util.List;
 
 import utils.Constants;
 import utils.Sound;
@@ -11,8 +12,15 @@ import core.CameraManager;
 import core.WorldManager;
 
 public class Enemy {
-protected double worldX, worldY;
-protected BufferedImage sprite;
+    protected double worldX, worldY;
+    protected BufferedImage sprite;    
+
+    private double desiredSpacing;  // how far enemies try to stay apart
+    private double separationStrength;  // how strongly they push away
+    private double noiseStrength;   // randomness in movement
+    private double orbitRadius;     // distance where orbiting begins
+    private double orbitStrength;   // how strongly they orbit
+    private double chaseStrength;   // base chase force
 
     private double knockbackVX = 0;
     private double knockbackVY = 0;
@@ -63,9 +71,23 @@ protected BufferedImage sprite;
     public double getX() { return worldX; }
     public double getY() { return worldY; }
 
-    public Enemy(double worldX, double worldY) {
+    public Enemy(double worldX, double worldY,
+                double desiredSpacing,
+                double separationStrength,
+                double noiseStrength,
+                double orbitRadius,
+                double orbitStrength,
+                double chaseStrength) {
+
         this.worldX = worldX;
         this.worldY = worldY;
+
+        this.desiredSpacing = desiredSpacing;
+        this.separationStrength = separationStrength;
+        this.noiseStrength = noiseStrength;
+        this.orbitRadius = orbitRadius;
+        this.orbitStrength = orbitStrength;
+        this.chaseStrength = chaseStrength;
     }
 
     public void setSprite(BufferedImage sprite) {
@@ -117,29 +139,83 @@ protected BufferedImage sprite;
         else if (vx < 0) facingRight = false;
     }
 
-    public void updateMovement(Player player) {
-        double dx = getWrappedDelta(player.getX(), worldX, Constants.MAP_WIDTH);
-        double dy = getWrappedDelta(player.getY(), worldY, Constants.MAP_HEIGHT);
+    public void updateMovement(Player player, List<Enemy> nearby) {
 
-        if (hitOverlayAlpha > 0f) {
-            hitOverlayAlpha -= overlayFadeSpeed;
-            if (hitOverlayAlpha < 0f) hitOverlayAlpha = 0f;
+        // 1. Base chase direction
+        double dx = wrappedDelta(player.getX(), worldX, Constants.MAP_WIDTH);
+        double dy = wrappedDelta(player.getY(), worldY, Constants.MAP_HEIGHT);
+
+        double distToPlayer = Math.sqrt(dx*dx + dy*dy);
+
+        double toPlayerX = dx / distToPlayer;
+        double toPlayerY = dy / distToPlayer;
+
+        // -----------------------------
+        // 2. Separation steering
+        // -----------------------------
+        double sepX = 0;
+        double sepY = 0;
+
+        for (Enemy other : nearby) {
+            if (other == this) continue;
+
+            double ox = wrappedDelta(worldX, other.worldX, Constants.MAP_WIDTH);
+            double oy = wrappedDelta(worldY, other.worldY, Constants.MAP_HEIGHT);
+            double d = Math.sqrt(ox*ox + oy*oy);
+
+            if (d < desiredSpacing && d > 0) {
+                double push = (desiredSpacing - d) / desiredSpacing;
+                sepX += (ox / d) * push;
+                sepY += (oy / d) * push;
+            }
         }
 
-        if (dx != 0 || dy != 0) {
-            double length = Math.sqrt(dx * dx + dy * dy);
-            double normX = dx / length;
-            double normY = dy / length;
+        // -----------------------------
+        // 3. Directional noise
+        // -----------------------------
+        double noiseX = (Math.random() * 2 - 1) * noiseStrength;
+        double noiseY = (Math.random() * 2 - 1) * noiseStrength;
 
-            worldX += (normX * speed);
-            worldY += (normY * speed);
+        // -----------------------------
+        // 4. Orbiting behavior
+        // -----------------------------
+        double orbitX = 0;
+        double orbitY = 0;
 
-            updateFacingDirection(normX);
+        if (distToPlayer < orbitRadius) {
+            orbitX = -toPlayerY;
+            orbitY = toPlayerX;
         }
 
-        worldX = WorldManager.wrapX(worldX);
-        worldY = WorldManager.wrapY(worldY);
+        // -----------------------------
+        // 5. Combine steering forces
+        // -----------------------------
+        double finalX =
+                toPlayerX * chaseStrength +
+                sepX * separationStrength +
+                noiseX +
+                orbitX * orbitStrength;
+
+        double finalY =
+                toPlayerY * chaseStrength +
+                sepY * separationStrength +
+                noiseY +
+                orbitY * orbitStrength;
+
+        // Normalize final vector
+        double len = Math.sqrt(finalX*finalX + finalY*finalY);
+        if (len > 0) {
+            finalX /= len;
+            finalY /= len;
+        }
+
+        // -----------------------------
+        // 6. Apply movement
+        // -----------------------------
+        worldX = WorldManager.wrapX(worldX + finalX * speed);
+        worldY = WorldManager.wrapY(worldY + finalY * speed);
     }
+
 
     public void applyKnockbackMovement() {
         worldX += knockbackVX;
@@ -171,13 +247,13 @@ protected BufferedImage sprite;
         knockbackVY = (dy / length) * knockbackStrength;
     }
 
-    private int getWrappedDelta(double target, double source, int mapSize) {
-    double direct = target - source;
-    double wrapped = (direct + mapSize) % mapSize;
-        if (wrapped > mapSize / 2) {
-            wrapped -= mapSize;
-        }
-    return (int) wrapped;
+    private double wrappedDelta(double target, double source, double mapSize) {
+        double delta = target - source;
+
+        if (delta >  mapSize / 2) delta -= mapSize;
+        if (delta < -mapSize / 2) delta += mapSize;
+
+        return delta;
     }
 
     public void draw(Graphics g, CameraManager camera) {
@@ -268,6 +344,16 @@ protected BufferedImage sprite;
 
         float pitch = 1.0f + (float)(Math.random() * 0.1 - 0.10); // ±5%
         IMPACT_SOUND.play(pitch);
+    }
+
+    public void update() {
+        // Fade hit overlay
+        if (hitOverlayAlpha > 0f) {
+            hitOverlayAlpha -= overlayFadeSpeed;
+            if (hitOverlayAlpha < 0f) {
+                hitOverlayAlpha = 0f;
+            }
+        }
     }
 
     public boolean isAlive() {

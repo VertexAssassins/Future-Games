@@ -7,7 +7,15 @@ import javax.imageio.ImageIO;
 
 public class Rat extends Enemy {
     public Rat(double worldX, double worldY) {
-        super(worldX, worldY);
+        super(
+            worldX, worldY,
+            5,       // desiredSpacing (extremely tight)
+            -1.2,    // separationStrength (strong cohesion)
+            0.02,    // noiseStrength (smooth movement)
+            20,      // orbitRadius (must be touching to orbit)
+            0.0,     // orbitStrength (no orbiting)
+            0.6      // chaseStrength (pack movement)
+        );
 
         try {
                 setSprite(ImageIO.read(getClass().getResource("/enemies/rat/rat.png")));
@@ -15,7 +23,7 @@ public class Rat extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 2.5;
+        baseSpeed = 2.05;
         baseDamage = 1;
         baseHealth = 1.0;
         baseAttackCooldown = 500;

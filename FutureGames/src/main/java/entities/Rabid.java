@@ -7,7 +7,15 @@ import javax.imageio.ImageIO;
 
 public class Rabid extends Enemy {
     public Rabid(double worldX, double worldY) {
-        super(worldX, worldY);
+        super(
+            worldX, worldY,
+            80,     // desiredSpacing (wide formation)
+            2.0,    // separationStrength (strong spacing)
+            0.15,   // noiseStrength (slight unpredictability)
+            260,    // orbitRadius (start circling early)
+            2.0,    // orbitStrength (aggressive flanking)
+            0.7     // chaseStrength (less direct, more tactical)
+        );
 
         try {
                 setSprite(ImageIO.read(getClass().getResource("/enemies/rabid/rabid.png")));
@@ -15,7 +23,7 @@ public class Rabid extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 3;
+        baseSpeed = 2.0;
         baseDamage = 25;
         baseHealth = 50.0;
         baseAttackCooldown = 600;

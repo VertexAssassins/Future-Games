@@ -86,12 +86,16 @@ public class GameLoop extends Thread {
         player.update();
         waveManager.update();
 
-        updateEnemyMovement();
+        for (Enemy enemy : enemies) {
+            enemy.update();
+        }
+
+        Quadtree quadtree = buildQuadtree();
+
+        updateEnemyMovement(quadtree);
         applyKnockbackMovement();
 
         updateWeaponsAndShooting();
-
-        Quadtree quadtree = buildQuadtree();
 
         resolveEnemyBounce(quadtree);
         quadtree = rebuildQuadtree(); // final rebuild before projectile update
@@ -104,9 +108,12 @@ public class GameLoop extends Thread {
         maybeAdvanceWave();
     }
 
-    private void updateEnemyMovement() {
+    private void updateEnemyMovement(Quadtree quadtree) {
         for (Enemy enemy : enemies) {
-            enemy.updateMovement(player);
+            // Query nearby enemies using the quadtree
+            List<Enemy> nearby = quadtree.query(enemy.getBounds());
+
+            enemy.updateMovement(player, nearby);
         }
     }
 
