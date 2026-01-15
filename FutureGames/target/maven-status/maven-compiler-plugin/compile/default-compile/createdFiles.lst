@@ -7,6 +7,7 @@ weapons\AutoShotgun.class
 entities\Projectile.class
 utils\UISlider.class
 waves\WaveManager.class
+core\GamePanel$5.class
 weapons\WeaponType.class
 core\GamePanel$2.class
 input\KeyBindings$WeaponSwitcher.class
@@ -27,7 +28,10 @@ utils\Animation.class
 entities\Rat.class
 utils\Constants.class
 weapons\ProjectileSpawner.class
+gameModificationCards\ModifierLibrary.class
+gameModificationCards\ModifierType.class
 weapons\LMG.class
+gameModificationCards\RarityValues$1.class
 input\KeyBindings$1.class
 entities\Zombie.class
 waves\Wave.class
@@ -38,9 +42,12 @@ weapons\WeaponStats.class
 core\CameraManager.class
 weapons\Weapon.class
 input\KeyBindings$3.class
+gameModificationCards\Modifier.class
+gameModificationCards\ModifierCard.class
 utils\PlayerAnimationSet.class
 core\Main.class
 core\WorldManager.class
+gameModificationCards\Rarity.class
 utils\CollisionResolver.class
 core\GamePanel$1.class
 core\ShopPanel.class
@@ -48,9 +55,12 @@ core\GameRenderer.class
 core\PersistenceManager.class
 entities\FlamingSkull.class
 core\GameFrame.class
+core\GamePanel$4.class
+gameModificationCards\RarityValues.class
 weapons\WeaponManager.class
 weapons\WeaponUnlockManager.class
 weapons\Revolver.class
+gameModificationCards\ModifierLibrary$1.class
 weapons\Handgun.class
 waves\WaveBlueprint$ConditionalSpawnRule.class
 core\GameState.class

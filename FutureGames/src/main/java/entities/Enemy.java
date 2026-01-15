@@ -53,13 +53,19 @@ protected BufferedImage sprite;
     protected double colliderRadius = size * .75;
     protected boolean facingRight = true;
 
+    // Global modifiers
+    public static double GLOBAL_SPEED_MULT = 1.0;
+    public static double GLOBAL_DAMAGE_MULT = 1.0;
+    public static double GLOBAL_HEALTH_MULT = 1.0;
+    public static double GLOBAL_COOLDOWN_MULT = 1.0;
+    public static double GLOBAL_POINTS_MULT = 1.0;
+
     public double getX() { return worldX; }
     public double getY() { return worldY; }
 
     public Enemy(double worldX, double worldY) {
         this.worldX = worldX;
         this.worldY = worldY;
-        burstRemaining = burstCount;
     }
 
     public void setSprite(BufferedImage sprite) {
@@ -70,12 +76,12 @@ protected BufferedImage sprite;
         return size * 0.55; // 10% larger than half-size (0.5 * size * 1.1 = 0.55 * size)
     }
 
-    protected void applyGlobalModifiers(double speedMult, double damageMult, double healthMult, double cooldownMult, int pointsMult) {
+    protected void applyGlobalModifiers(double speedMult, double damageMult, double healthMult, double cooldownMult, double pointsMult) {
         speed = baseSpeed * speedMult;
         damage = baseDamage * damageMult;
         health = baseHealth * healthMult;
         attackCooldown = (long)(baseAttackCooldown * cooldownMult);
-        points = basePoints * pointsMult;
+        points = (int)(basePoints * pointsMult);
     }
 
     public void attemptAttack(Player player) {

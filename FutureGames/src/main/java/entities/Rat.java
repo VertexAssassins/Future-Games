@@ -19,11 +19,19 @@ public class Rat extends Enemy {
         baseDamage = 1;
         baseHealth = 1.0;
         baseAttackCooldown = 500;
-        burstCount = 1;
+        burstCount = 5;
         basePoints = 1;
         size = 25;
         color = Color.GREEN;
 
-        applyGlobalModifiers(1.0, 1.0, 1.0, 1.0, 1); // no scaling, just use new base values
+        burstRemaining = burstCount;
+
+        applyGlobalModifiers(
+            GLOBAL_SPEED_MULT,
+            GLOBAL_DAMAGE_MULT,
+            GLOBAL_HEALTH_MULT,
+            GLOBAL_COOLDOWN_MULT,
+            GLOBAL_POINTS_MULT
+        );
     }
 }

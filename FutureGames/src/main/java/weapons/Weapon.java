@@ -2,11 +2,13 @@ package weapons;
 
 import java.awt.Point;
 
+import entities.Player;
 import utils.Sound;
 
 public abstract class Weapon {
     protected final ProjectileSpawner spawner;
     protected final WeaponStats stats;
+    protected final Player player;
     protected int ammo;
     protected long lastShotTime;
     protected boolean reloading = false;
@@ -14,9 +16,10 @@ public abstract class Weapon {
     protected Sound fireSound;
     protected Sound reloadSound;
 
-    public Weapon(WeaponStats stats, ProjectileSpawner spawner) {
+    public Weapon(WeaponStats stats, ProjectileSpawner spawner, Player player) {
         this.stats = stats;
         this.spawner = spawner;
+        this.player = player;
         this.ammo = stats.maxAmmo;
     }
 

@@ -9,6 +9,7 @@ import entities.Enemy;
 import entities.HealthPickup;
 import entities.Player;
 import entities.Projectile;
+import gameModificationCards.*;
 import input.KeyBindings;
 import utils.MusicManager;
 import utils.Sound;
@@ -35,6 +36,9 @@ public class GamePanel extends JPanel {
     private Rectangle shopButton;
     private Rectangle quitButton;
     private Rectangle continueButton;
+    private Rectangle[] cardSelectionRects;
+    private List<ModifierCard> currentCards;
+
     // Pause menu UI
     private Rectangle resumeButton;
     private Rectangle pauseQuitButton;
@@ -46,6 +50,9 @@ public class GamePanel extends JPanel {
     private boolean draggingMusic = false;
     private boolean draggingSfx = false;
 
+    private boolean debugEnabled = false;
+
+    public boolean isDebugEnabled() { return debugEnabled; }
     public boolean isMouseDown() { return mouseDown; }
     public Point getMousePos() { return mousePos; }
     public WeaponManager getWeaponManager() { return weaponManager; }
@@ -68,6 +75,11 @@ public class GamePanel extends JPanel {
     public Rectangle getQuitButton() { return quitButton; }
     public Rectangle getContinueButton() { return continueButton; }
 
+    public void setCardSelectionRects(Rectangle[] rects) { this.cardSelectionRects = rects; }
+    public Rectangle[] getCardSelectionRects() { return cardSelectionRects; }
+    public List<ModifierCard> getCurrentCards() { return currentCards; }
+    public void showCardSelection(List<ModifierCard> cards) { this.currentCards = cards; }
+
     public ShopPanel getShopPanel() { return shopPanel; }
 
     public GameState getGameState() {
@@ -86,13 +98,13 @@ public class GamePanel extends JPanel {
 
     private final WeaponManager weaponManager = new WeaponManager(
         Map.of(
-            WeaponType.HANDGUN, new Handgun(this::spawnProjectile),
-            WeaponType.REVOLVER, new Revolver(this::spawnProjectile),
-            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile),
-            WeaponType.SMG, new SMG(this::spawnProjectile),
-            WeaponType.ASSAULTRIFLE, new AssaultRifle(this::spawnProjectile),
-            WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile),
-            WeaponType.LMG, new LMG(this::spawnProjectile)
+            WeaponType.HANDGUN, new Handgun(this::spawnProjectile, player),
+            WeaponType.REVOLVER, new Revolver(this::spawnProjectile, player),
+            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile, player),
+            WeaponType.SMG, new SMG(this::spawnProjectile, player),
+            WeaponType.ASSAULTRIFLE, new AssaultRifle(this::spawnProjectile, player),
+            WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile, player),
+            WeaponType.LMG, new LMG(this::spawnProjectile, player)
         ),
         WeaponType.HANDGUN
     );
@@ -121,6 +133,19 @@ public class GamePanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 togglePause();
+            }
+        });
+
+        // Key binding for F3 (debug toggle)
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
+            "toggleDebug"
+        );
+
+        getActionMap().put("toggleDebug", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                debugEnabled = !debugEnabled;
             }
         });
 
@@ -181,6 +206,20 @@ public class GamePanel extends JPanel {
 
                     if (quitButton.contains(mx, my)) {
                         System.exit(0);
+                    }
+                }
+
+                // --- CARD SELECTION SCREEN ---
+                if (gameState == GameState.CARD_SELECTION) {
+                    Rectangle[] rects = getCardSelectionRects();
+
+                    for (int i = 0; i < 3; i++) {
+                        if (rects[i].contains(mx, my)) {
+                            applyCard(currentCards.get(i));
+                            setGameState(GameState.PLAYING);
+                            waveManager.advanceWave();
+                            return;
+                        }
                     }
                 }
 
@@ -303,6 +342,26 @@ public class GamePanel extends JPanel {
         }
     }
 
+    public void applyCard(ModifierCard card) {
+        applyModifier(card.good);
+        applyModifier(card.bad);
+    }
+
+    private void applyModifier(Modifier m) {
+        switch (m.type) {
+            case DAMAGE_MULT -> player.damageMultiplier += m.value / 100.0;
+            case MAX_HEALTH -> player.increaseMaxHealth(m.value);
+            case AMMO_CAPACITY -> weaponManager.increaseAmmoCapacity(m.value);
+            case FIRE_RATE -> weaponManager.increaseFireRate(m.value);
+            case MOVE_SPEED -> player.increaseSpeed(m.value);
+            case POINTS_GAINED -> player.pointsMultiplier += m.value / 100.0;
+
+            case ENEMY_DAMAGE -> Enemy.GLOBAL_DAMAGE_MULT += m.value / 100.0;
+            case ENEMY_HEALTH -> Enemy.GLOBAL_HEALTH_MULT += m.value / 100.0;
+            case ENEMY_SPEED -> Enemy.GLOBAL_SPEED_MULT += m.value / 100.0;
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -347,7 +406,7 @@ public class GamePanel extends JPanel {
         gameState = GameState.PLAYING;
 
         // Reinitialize player
-        player.applyModifiers(1.0, 1.0); // reset stats
+        player.recalcStats();
         player.setPosition(300, 200);   // or your spawn point
         // Optionally reset movement flags if needed
 

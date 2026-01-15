@@ -21,6 +21,12 @@ D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\Rabid.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\Rat.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\entities\Zombie.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\gameModificationCards\Modifier.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\gameModificationCards\ModifierCard.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\gameModificationCards\ModifierLibrary.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\gameModificationCards\ModifierType.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\gameModificationCards\Rarity.java
+D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\gameModificationCards\RarityValues.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\input\KeyBindings.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\Animation.java
 D:\UCD\Game\GitHub Future Games\Future-Games\FutureGames\src\main\java\utils\CollisionResolver.java

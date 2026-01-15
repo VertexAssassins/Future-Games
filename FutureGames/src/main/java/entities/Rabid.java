@@ -24,6 +24,14 @@ public class Rabid extends Enemy {
         size = 50;
         color = Color.BLUE;
 
-        applyGlobalModifiers(1.0, 1.0, 1.0, 1.0, 1); // no scaling, just use new base values
+        burstRemaining = burstCount;
+
+        applyGlobalModifiers(
+            GLOBAL_SPEED_MULT,
+            GLOBAL_DAMAGE_MULT,
+            GLOBAL_HEALTH_MULT,
+            GLOBAL_COOLDOWN_MULT,
+            GLOBAL_POINTS_MULT
+        );
     }
 }

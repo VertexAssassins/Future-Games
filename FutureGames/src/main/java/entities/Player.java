@@ -55,17 +55,23 @@ public class Player {
     private Map<String, PlayerAnimationSet> animationSets = new HashMap<>();
     private PlayerAnimationSet currentSet;
 
+    // --- GLOBAL PLAYER MODIFIERS (affected by cards) ---
+    public double damageMultiplier = 1.0;
+    public double speedMultiplier = 1.0;
+    public double pointsMultiplier = 1.0;
+    public double maxHealthBonus = 0.0;   // additive bonus (5/10/50)
+
     private boolean facingRight = true;
 
     public Player() {
-        applyModifiers(1.0, 1.0); // default: no modifiers
+        recalcStats();
+        health = maxHealth;   // start fully healed
 
         points = PersistenceManager.load("points", 0);
 
         loadAnimations();
         setWeaponAnimation(WeaponType.HANDGUN);
         currentAnimation = currentSet.idle;
-
     }
 
     public void setPosition(double x, double y) {
@@ -113,10 +119,32 @@ public class Player {
     }
 
 
-    public void applyModifiers(double speedMult, double healthMult) {
-        speed = baseSpeed * speedMult;
-        health = baseHealth * healthMult;
-        maxHealth = baseHealth * healthMult;
+    public void recalcStats() {
+        speed = baseSpeed * speedMultiplier;
+        maxHealth = baseHealth + maxHealthBonus;
+
+        // If max health increases, heal the player proportionally
+        if (health > maxHealth) {
+            health = maxHealth;
+        }
+    }
+
+    public void increaseSpeed(double percent) {
+        speedMultiplier += percent / 100.0;
+        recalcStats();
+    }
+
+    public void increaseMaxHealth(double amount) {
+        maxHealthBonus += amount;
+        recalcStats();
+    }
+
+    public void increaseDamage(double percent) {
+        damageMultiplier += percent / 100.0;
+    }
+
+    public void increasePointsGained(double percent) {
+        pointsMultiplier += percent / 100.0;
     }
 
     public void takeDamage(double amount) {
@@ -136,7 +164,7 @@ public class Player {
     }
 
     public void addPoints(int amount) {
-        points += amount;
+        points += (int)(amount * pointsMultiplier);
         PersistenceManager.save("points", points); // persist immediately
     }
 

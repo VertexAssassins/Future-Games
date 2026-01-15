@@ -8,7 +8,11 @@ import entities.Enemy;
 import entities.HealthPickup;
 import entities.Player;
 import entities.Projectile;
+import gameModificationCards.ModifierCard;
+import gameModificationCards.ModifierType;
+import gameModificationCards.Rarity;
 import waves.WaveManager;
+import weapons.WeaponManager;
 
 public class GameRenderer {
 
@@ -26,7 +30,8 @@ public class GameRenderer {
 
         switch (state) {
             case PAUSED -> drawPauseMenu(g);
-            case PLAYING -> drawGameplay(g);
+            case PLAYING -> { drawGameplay(g); drawDebug((Graphics2D) g); }
+            case CARD_SELECTION -> drawCardSelection(g);
             case GAME_OVER -> drawGameOver(g);
             case SHOP -> drawShop(g);
         }
@@ -164,6 +169,92 @@ public class GameRenderer {
     }
 
     // -------------------------
+    // CARD SELECTION SCREEN
+    // -------------------------
+    private void drawCardSelection(Graphics g) {
+        List<ModifierCard> cards = panel.getCurrentCards();
+        if (cards == null || cards.size() != 3) return;
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        int screenW = panel.getWidth();
+        int screenH = panel.getHeight();
+
+        // Card layout
+        int cardWidth = 260;
+        int cardHeight = 180;
+        int spacing = 40;
+
+        int totalWidth = cardWidth * 3 + spacing * 2;
+        int startX = (screenW - totalWidth) / 2;
+        int y = screenH / 2 - cardHeight / 2;
+
+        // Prepare rectangles for GamePanel to use for click detection
+        Rectangle[] cardRects = new Rectangle[3];
+
+        for (int i = 0; i < 3; i++) {
+            int x = startX + i * (cardWidth + spacing);
+            cardRects[i] = new Rectangle(x, y, cardWidth, cardHeight);
+
+            drawSingleCard(g2, cards.get(i), x, y, cardWidth, cardHeight);
+        }
+
+        // Store rectangles in GamePanel so mousePressed can detect clicks
+        panel.setCardSelectionRects(cardRects);
+    }
+
+    private void drawSingleCard(Graphics2D g2, ModifierCard card, int x, int y, int w, int h) {
+
+        // Background
+        g2.setColor(new Color(30, 30, 30));
+        g2.fillRoundRect(x, y, w, h, 20, 20);
+
+        // Rarity border
+        g2.setStroke(new BasicStroke(4));
+        g2.setColor(getRarityColor(card.rarity));
+        g2.drawRoundRect(x, y, w, h, 20, 20);
+
+        // Title
+        g2.setFont(new Font("Arial", Font.BOLD, 22));
+        g2.setColor(Color.WHITE);
+        g2.drawString(card.rarity.toString(), x + 15, y + 35);
+
+        // Good modifier
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2.setColor(new Color(120, 255, 120));
+        g2.drawString("+" + card.good.value + "% " + formatModifier(card.good.type),
+                    x + 15, y + 75);
+
+        // Bad modifier
+        g2.setColor(new Color(255, 120, 120));
+        g2.drawString("+" + card.bad.value + "% " + formatModifier(card.bad.type),
+                    x + 15, y + 115);
+    }
+
+    private Color getRarityColor(Rarity rarity) {
+        return switch (rarity) {
+            case STANDARD -> new Color(180, 180, 180);
+            case UNCOMMON -> new Color(80, 200, 120);
+            case RARE -> new Color(120, 160, 255);
+        };
+    }
+
+    private String formatModifier(ModifierType type) {
+        return switch (type) {
+            case DAMAGE_MULT -> "Damage";
+            case MAX_HEALTH -> "Max Health";
+            case AMMO_CAPACITY -> "Ammo Capacity";
+            case FIRE_RATE -> "Fire Rate";
+            case MOVE_SPEED -> "Move Speed";
+            case POINTS_GAINED -> "Points Gained";
+
+            case ENEMY_DAMAGE -> "Enemy Damage";
+            case ENEMY_HEALTH -> "Enemy Health";
+            case ENEMY_SPEED -> "Enemy Speed";
+        };
+    }
+
+    // -------------------------
     // GAME OVER SCREEN
     // -------------------------
     private void drawGameOver(Graphics g) {
@@ -191,5 +282,44 @@ public class GameRenderer {
         panel.getShopPanel().draw(g, panel.getPlayer(), panel.getWidth(), panel.getHeight());
 
         drawButton((Graphics2D) g, panel.getContinueButton(), "Continue");
+    }
+
+    // -------------------------
+    // DEBUG RENDERING
+    // -------------------------
+    private void drawDebug(Graphics2D g2) {
+        if (!panel.isDebugEnabled()) return;
+
+        int x = 20;
+        int y = 40;
+
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRoundRect(10, 10, 350, 300, 15, 15);
+
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Consolas", Font.PLAIN, 16));
+
+        g2.drawString("=== DEBUG MODIFIERS ===", x, y); y += 25;
+
+        // Player modifiers
+        Player p = panel.getPlayer();
+        g2.drawString("Player Damage x" + format(p.damageMultiplier), x, y); y += 20;
+        g2.drawString("Player Speed x" + format(p.speedMultiplier), x, y); y += 20;
+        g2.drawString("Player Points x" + format(p.pointsMultiplier), x, y); y += 20;
+        g2.drawString("Player Max HP +" + format(p.maxHealthBonus), x, y); y += 30;
+
+        // Enemy modifiers
+        g2.drawString("Enemy Damage x" + format(Enemy.GLOBAL_DAMAGE_MULT), x, y); y += 20;
+        g2.drawString("Enemy Speed x" + format(Enemy.GLOBAL_SPEED_MULT), x, y); y += 20;
+        g2.drawString("Enemy Health x" + format(Enemy.GLOBAL_HEALTH_MULT), x, y); y += 20;
+
+        // Weapon modifiers
+        WeaponManager wm = panel.getWeaponManager();
+        g2.drawString("Fire Rate: " + wm.getCurrent().getStats().rateOfFire, x, y); y += 20;
+        g2.drawString("Max Ammo: " + wm.getCurrent().getStats().maxAmmo, x, y); y += 20;
+    }
+
+    private String format(double val) {
+        return String.format("%.2f", val);
     }
 }

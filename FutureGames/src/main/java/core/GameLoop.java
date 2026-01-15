@@ -4,6 +4,7 @@ import java.util.List;
 import java.awt.Rectangle;
 import entities.Player;
 import entities.Projectile;
+import gameModificationCards.ModifierCard;
 import utils.Constants;
 import utils.MusicManager;
 import utils.Quadtree;
@@ -224,7 +225,21 @@ public class GameLoop extends Thread {
     }
 
     private void maybeAdvanceWave() {
-        if (panel.getGameState() == GameState.PLAYING && enemies.isEmpty() && !waveManager.isWaveActive()) {
+
+        // If wave is finished and enemies are gone
+        if (panel.getGameState() == GameState.PLAYING &&
+            enemies.isEmpty() &&
+            !waveManager.isWaveActive()) {
+
+            // If at least Wave 1 has been completed → show cards
+            if (waveManager.getWaveNumber() >= 1) {
+                List<ModifierCard> cards = waveManager.generateCards();
+                panel.showCardSelection(cards);
+                panel.setGameState(GameState.CARD_SELECTION);
+                return;
+            }
+
+            // Otherwise (waveNumber == 0) → start Wave 1
             waveManager.advanceWave();
         }
     }

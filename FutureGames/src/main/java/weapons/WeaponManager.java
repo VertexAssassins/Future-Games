@@ -10,6 +10,18 @@ public class WeaponManager {
         this.current = defaultWeapon;
     }
 
+    public void increaseAmmoCapacity(double percent) {
+        for (Weapon w : weapons.values()) {
+            w.getStats().maxAmmo += (int)(w.getStats().maxAmmo * (percent / 100.0));
+        }
+    }
+
+    public void increaseFireRate(double percent) {
+        for (Weapon w : weapons.values()) {
+            w.getStats().rateOfFire *= (1 + percent / 100.0);
+        }
+    }
+
     public void switchTo(WeaponType type) {
         String id = type.name().toLowerCase();
 

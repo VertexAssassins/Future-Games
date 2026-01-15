@@ -12,17 +12,19 @@ public class Projectile {
     private final double speed;
     private final double range;
     private final double damage;
+    private final Player owner;
     private double traveled = 0;
 
     private final int size = 10;
 
-    public Projectile(double x, double y, double angle, double speed, double range, double damage) {
+    public Projectile(double x, double y, double angle, double speed, double range, double damage, Player owner) {
         this.x = x;
         this.y = y;
         this.angle = angle;
         this.speed = speed;
         this.range = range;
         this.damage = damage;
+        this.owner = owner;
     }
 
     public double getX() { return x; }
@@ -136,8 +138,10 @@ public class Projectile {
     }
 
     private void applyDamage(Enemy e, double hitX, double hitY) {
-        e.takeDamage(damage);
-        e.applyKnockback(hitX, hitY, damage, e.getHealth() + damage);
+        double finalDamage = damage * owner.damageMultiplier;
+
+        e.takeDamage(finalDamage);
+        e.applyKnockback(hitX, hitY, finalDamage, e.getHealth() + finalDamage);
     }
 
     public void draw(Graphics g, double cameraX, double cameraY) {

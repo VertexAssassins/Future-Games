@@ -24,6 +24,14 @@ public class Brute extends Enemy {
         size = 125;
         color = Color.ORANGE;
 
-        applyGlobalModifiers(1.0, 1.0, 1.0, 1.0, 1); // no scaling, just use new base values
+        burstRemaining = burstCount;
+
+        applyGlobalModifiers(
+            GLOBAL_SPEED_MULT,
+            GLOBAL_DAMAGE_MULT,
+            GLOBAL_HEALTH_MULT,
+            GLOBAL_COOLDOWN_MULT,
+            GLOBAL_POINTS_MULT
+        );
     }
 }

@@ -1,15 +1,17 @@
 package weapons;
 
+import entities.Player;
+
 public class WeaponFactory {
-    public static Weapon create(WeaponType type, ProjectileSpawner spawner) {
+    public static Weapon create(WeaponType type, ProjectileSpawner spawner, Player player) {
         return switch (type) {
-            case HANDGUN -> new Handgun(spawner);
-            case REVOLVER -> new Revolver(spawner);
-            case SHOTGUN -> new PumpShotgun(spawner);
-            case SMG -> new SMG(spawner);
-            case ASSAULTRIFLE -> new AssaultRifle(spawner);
-            case AUTOSHOTGUN -> new AutoShotgun(spawner);
-            case LMG-> new LMG(spawner);
+            case HANDGUN -> new Handgun(spawner, player);
+            case REVOLVER -> new Revolver(spawner, player);
+            case SHOTGUN -> new PumpShotgun(spawner, player);
+            case SMG -> new SMG(spawner, player);
+            case ASSAULTRIFLE -> new AssaultRifle(spawner, player);
+            case AUTOSHOTGUN -> new AutoShotgun(spawner, player);
+            case LMG-> new LMG(spawner, player);
         };
     }
 }

@@ -2,8 +2,10 @@ package waves;
 
 import entities.Enemy;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import gameModificationCards.*;
 import entities.Player;
 import entities.Brute;
 import entities.FlamingSkull;
@@ -127,6 +129,34 @@ public class WaveManager {
         List<Wave.SpawnRequest> requests = blueprint.generateRequests(currentWaveNumber);
         double spawnRate = 0.25; // or scale with waveNumber
         startWave(new Wave(requests, spawnRate));
+    }
+
+    public List<ModifierCard> generateCards() {
+        List<ModifierType> goodList = ModifierLibrary.GOOD_VALUES.keySet().stream().toList();
+        List<ModifierType> badList  = ModifierLibrary.BAD_VALUES.keySet().stream().toList();
+
+        List<ModifierCard> cards = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            Rarity rarity = rollRarity();
+            Modifier good = ModifierLibrary.create(randomFrom(goodList), rarity);
+            Modifier bad  = ModifierLibrary.create(randomFrom(badList), rarity);
+
+            cards.add(new ModifierCard(rarity, good, bad));
+        }
+
+        return cards;
+    }
+
+    private Rarity rollRarity() {
+        double r = Math.random();
+        if (r < 0.60) return Rarity.STANDARD;
+        if (r < 0.90) return Rarity.UNCOMMON;
+        return Rarity.RARE;
+    }
+
+    private <T> T randomFrom(List<T> list) {
+        return list.get((int)(Math.random() * list.size()));
     }
 
 
