@@ -157,28 +157,40 @@ public class GamePanel extends JPanel {
                     player.setWeaponAnimation(WeaponType.HANDGUN);
                 }
                 case 1 -> {
-                    weaponManager.switchTo(WeaponType.REVOLVER);
-                    player.setWeaponAnimation(WeaponType.REVOLVER);
+                    if (WeaponUnlockManager.isUnlocked("revolver")) {
+                        weaponManager.switchTo(WeaponType.REVOLVER);
+                        player.setWeaponAnimation(WeaponType.REVOLVER);
+                    }
                 }
                 case 2 -> {
-                    weaponManager.switchTo(WeaponType.SHOTGUN);
-                    player.setWeaponAnimation(WeaponType.SHOTGUN);
+                    if (WeaponUnlockManager.isUnlocked("shotgun")) {
+                        weaponManager.switchTo(WeaponType.SHOTGUN);
+                        player.setWeaponAnimation(WeaponType.SHOTGUN);
+                    }
                 }
                 case 3 -> {
-                    weaponManager.switchTo(WeaponType.SMG);
-                    player.setWeaponAnimation(WeaponType.SMG);
+                    if (WeaponUnlockManager.isUnlocked("smg")) {
+                        weaponManager.switchTo(WeaponType.SMG);
+                        player.setWeaponAnimation(WeaponType.SMG);
+                    }
                 }
                 case 4 -> {
-                    weaponManager.switchTo(WeaponType.ASSAULTRIFLE);
-                    player.setWeaponAnimation(WeaponType.ASSAULTRIFLE);
+                    if (WeaponUnlockManager.isUnlocked("assaultrifle")) {
+                        weaponManager.switchTo(WeaponType.ASSAULTRIFLE);
+                        player.setWeaponAnimation(WeaponType.ASSAULTRIFLE);
+                    }
                 }
                 case 5 -> {
-                    weaponManager.switchTo(WeaponType.AUTOSHOTGUN);
-                    player.setWeaponAnimation(WeaponType.AUTOSHOTGUN);
+                    if (WeaponUnlockManager.isUnlocked("autoshotgun")) {
+                        weaponManager.switchTo(WeaponType.AUTOSHOTGUN);
+                        player.setWeaponAnimation(WeaponType.AUTOSHOTGUN);
+                    }
                 }
                 case 6 -> {
-                    weaponManager.switchTo(WeaponType.LMG);
-                    player.setWeaponAnimation(WeaponType.LMG);
+                    if (WeaponUnlockManager.isUnlocked("lmg")) {
+                        weaponManager.switchTo(WeaponType.LMG);
+                        player.setWeaponAnimation(WeaponType.LMG);
+                    }
                 }
             }
         });
