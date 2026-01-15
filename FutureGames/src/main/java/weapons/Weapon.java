@@ -29,6 +29,10 @@ public abstract class Weapon {
             reloading = false;
         }
     }
+    public void resetStatsToBase() {
+        stats.resetToBase();   // delegate to WeaponStats
+        ammo = stats.maxAmmo;
+    }
 
    public boolean tryFire(double x, double y, double angle) {
         long now = System.currentTimeMillis();

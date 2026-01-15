@@ -32,10 +32,10 @@ public class GamePanel extends JPanel {
     private final List<HealthPickup> healthPickups = new ArrayList<>();
     
     private GameState gameState = GameState.PLAYING;
-    private Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
-    private Rectangle shopButton;
-    private Rectangle quitButton;
-    private Rectangle continueButton;
+    public Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
+    public Rectangle shopButton;
+    public Rectangle quitButton;
+    public Rectangle continueButton;
     private Rectangle[] cardSelectionRects;
     private List<ModifierCard> currentCards;
 
@@ -353,6 +353,7 @@ public class GamePanel extends JPanel {
             case MAX_HEALTH -> player.increaseMaxHealth(m.value);
             case AMMO_CAPACITY -> weaponManager.increaseAmmoCapacity(m.value);
             case FIRE_RATE -> weaponManager.increaseFireRate(m.value);
+            case RELOAD_SPEED -> weaponManager.increaseReloadSpeed(m.value);
             case MOVE_SPEED -> player.increaseSpeed(m.value);
             case POINTS_GAINED -> player.pointsMultiplier += m.value / 100.0;
 
@@ -405,24 +406,47 @@ public class GamePanel extends JPanel {
         // Reset game state
         gameState = GameState.PLAYING;
 
-        // Reinitialize player
+        // -------------------------
+        // RESET PLAYER MODIFIERS
+        // -------------------------
+        player.damageMultiplier = 1.0;
+        player.speedMultiplier = 1.0;
+        player.pointsMultiplier = 1.0;
+        player.maxHealthBonus = 0.0;
+
         player.recalcStats();
-        player.setPosition(300, 200);   // or your spawn point
-        // Optionally reset movement flags if needed
+        player.health = player.maxHealth;
+        player.setPosition(300, 200);
 
-        // Clear enemies and projectiles
-        synchronized (enemies) {
-            enemies.clear();
-        }
-        synchronized (projectiles) {
-            projectiles.clear();
+        // -------------------------
+        // RESET ENEMY GLOBAL MODIFIERS
+        // -------------------------
+        Enemy.GLOBAL_SPEED_MULT = 1.0;
+        Enemy.GLOBAL_DAMAGE_MULT = 1.0;
+        Enemy.GLOBAL_HEALTH_MULT = 1.0;
+        Enemy.GLOBAL_COOLDOWN_MULT = 1.0;
+        Enemy.GLOBAL_POINTS_MULT = 1.0;
+
+        // -------------------------
+        // CLEAR ENTITIES
+        // -------------------------
+        synchronized (enemies) { enemies.clear(); }
+        synchronized (projectiles) { projectiles.clear(); }
+        healthPickups.clear();
+
+        // -------------------------
+        // RESET WEAPONS
+        // -------------------------
+        for (Weapon w : weaponManager.getAllWeapons()) {
+            w.resetStatsToBase();   // you'll add this method
         }
 
-        // Reset weapon manager
         weaponManager.switchTo(WeaponType.HANDGUN);
-        weaponManager.getCurrent().reload(); // optional
 
-        // Reset wave manager
+        // -------------------------
+        // RESET WAVES
+        // -------------------------
         waveManager.reset();
+        waveManager.advanceWave(); // start Wave 1
     }
 }

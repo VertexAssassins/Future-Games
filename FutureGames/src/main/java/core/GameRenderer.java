@@ -245,6 +245,7 @@ public class GameRenderer {
             case MAX_HEALTH -> "Max Health";
             case AMMO_CAPACITY -> "Ammo Capacity";
             case FIRE_RATE -> "Fire Rate";
+            case RELOAD_SPEED -> "Reload Speed";
             case MOVE_SPEED -> "Move Speed";
             case POINTS_GAINED -> "Points Gained";
 
@@ -259,6 +260,13 @@ public class GameRenderer {
     // -------------------------
     private void drawGameOver(Graphics g) {
         Player player = panel.getPlayer();
+
+        int cx = panel.getWidth() / 2;
+        int cy = panel.getHeight() / 2;
+
+        panel.retryButton = new Rectangle(cx - 100, cy + 20, 200, 50);
+        panel.shopButton  = new Rectangle(cx - 100, cy + 90, 200, 50);
+        panel.quitButton  = new Rectangle(cx - 100, cy + 160, 200, 50);
 
         g.setColor(Color.YELLOW);
         g.setFont(new Font("Arial", Font.BOLD, 40));
@@ -317,6 +325,7 @@ public class GameRenderer {
         WeaponManager wm = panel.getWeaponManager();
         g2.drawString("Fire Rate: " + wm.getCurrent().getStats().rateOfFire, x, y); y += 20;
         g2.drawString("Max Ammo: " + wm.getCurrent().getStats().maxAmmo, x, y); y += 20;
+        g2.drawString("Reload Time: " + wm.getCurrent().getStats().reloadTime + " ms", x, y); y += 20;
     }
 
     private String format(double val) {

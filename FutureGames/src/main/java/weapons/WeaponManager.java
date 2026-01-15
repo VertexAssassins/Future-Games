@@ -22,6 +22,18 @@ public class WeaponManager {
         }
     }
 
+    public void increaseReloadSpeed(double percent) {
+        for (Weapon w : weapons.values()) {
+            double factor = 1.0 - (percent / 100.0);
+            w.getStats().reloadTime *= factor;
+
+            // Prevent reload time from becoming too small
+            if (w.getStats().reloadTime < 100) {
+                w.getStats().reloadTime = 100; // 0.1s minimum
+            }
+        }
+    }
+
     public void switchTo(WeaponType type) {
         String id = type.name().toLowerCase();
 
@@ -35,6 +47,10 @@ public class WeaponManager {
 
     public Weapon getCurrent() {
         return weapons.get(current);
+    }
+
+    public Iterable<Weapon> getAllWeapons() {
+        return weapons.values();
     }
 
     public void update() {

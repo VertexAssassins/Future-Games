@@ -6,6 +6,7 @@ public enum ModifierType {
     MAX_HEALTH,
     AMMO_CAPACITY,
     FIRE_RATE,
+    RELOAD_SPEED,
     MOVE_SPEED,
     POINTS_GAINED,
 

@@ -17,7 +17,7 @@ import utils.Animation;
 public class Player {
     private double x = 300, y = 200;
     private final int size = 80;
-    private double maxHealth;
+    public double maxHealth;
     private int points;
 
     private float hitOverlayAlpha = 0f;
@@ -26,7 +26,7 @@ public class Player {
 
     // Base stats
     private double baseSpeed = 4.0;
-    private double baseHealth = 100.0;
+    public double baseHealth = 100.0;
 
     private long lastHitTime = 0;
     private long damageCooldown = 100; // milliseconds
@@ -34,7 +34,7 @@ public class Player {
 
     //Effective stats
     private double speed;
-    private double health;
+    public double health;
 
     // Movement
     private boolean up, down, left, right;
@@ -412,5 +412,12 @@ public class Player {
 
     public double getColliderRadius() {
         return size * 0.5; // or 0.55 if you want a slight buffer
+    }
+
+    public void reset() {
+        recalcStats();
+        health = maxHealth;
+        x = 300;
+        y = 200;
     }
 }

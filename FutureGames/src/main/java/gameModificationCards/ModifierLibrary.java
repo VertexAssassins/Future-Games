@@ -9,6 +9,7 @@ public class ModifierLibrary {
         ModifierType.MAX_HEALTH,       new double[]{2, 5, 15},
         ModifierType.AMMO_CAPACITY,    new double[]{2, 5, 25},
         ModifierType.FIRE_RATE,        new double[]{2, 5, 15},
+        ModifierType.RELOAD_SPEED,     new double[]{2, 5, 15},
         ModifierType.MOVE_SPEED,       new double[]{2, 5, 15},
         ModifierType.POINTS_GAINED,    new double[]{2, 5, 10}
     );
