@@ -23,7 +23,7 @@ public class Rat extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 2.05;
+        baseSpeed = 2.25;
         baseDamage = 1;
         baseHealth = 1.0;
         baseAttackCooldown = 500;

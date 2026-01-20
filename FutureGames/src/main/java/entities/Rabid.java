@@ -23,7 +23,7 @@ public class Rabid extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 2.0;
+        baseSpeed = 2.75;
         baseDamage = 25;
         baseHealth = 50.0;
         baseAttackCooldown = 600;

@@ -31,7 +31,7 @@ public class WaveManager {
 
         // Zombie enemy: increases by 4 * (1.25 ^ waveNum)
         blueprint.addRule(blueprint.new ConditionalSpawnRule(Zombie.class, waveNum -> (int)(4 * Math.pow(1.25, waveNum))));
-        // Brute enemy: 25% chance to spawn. sqrt(waveNum) + 1
+        // Brute enemy: 35.5% chance to spawn. sqrt(waveNum) + 1
         blueprint.addRule(
             blueprint.new ConditionalSpawnRule(
                 Brute.class,
@@ -39,8 +39,8 @@ public class WaveManager {
                     if (waveNum <= 5)
                         return 0; // too early, don't spawn
 
-                    // 1 in 4 chance
-                    if (Math.random() > 0.25)
+                    // 35.5% chance
+                    if (Math.random() > 0.355)
                         return 0;
 
                     // Spawn amount
@@ -48,15 +48,15 @@ public class WaveManager {
                 }
             )
         );
-        // Flaming Skull enemy: 20% chance to spawn. (waveNum^2 / 4) + 5
+        // Flaming Skull enemy: 28.4% chance to spawn. (waveNum^2 / 4) + 5
         blueprint.addRule(blueprint.new ConditionalSpawnRule(
                 FlamingSkull.class,
                 waveNum -> {
                     if (waveNum <= 3)
                         return 0; // too early, don't spawn
 
-                    // 1 in 5 chance
-                    if (Math.random() > (1.0 / 5.0))
+                    // 28.4% chance
+                    if (Math.random() > 0.284)
                         return 0;
 
                     // Spawn amount
@@ -64,15 +64,15 @@ public class WaveManager {
                 }
             )
         );
-        // Rat enemy: one in 6 chance to spawn. (waveNum^2 / 3) + 20
+        // Rat enemy: 23.6% chance to spawn. (waveNum^2 / 3) + 20
         blueprint.addRule(blueprint.new ConditionalSpawnRule(
                 Rat.class,
                 waveNum -> {
                     if (waveNum <= 5)
                         return 0; // too early, don't spawn
 
-                    // 1 in 6 chance
-                    if (Math.random() > (1.0 / 6.0))
+                    // 23.6% chance
+                    if (Math.random() > 0.236)
                         return 0;
 
                     // Spawn amount
@@ -80,15 +80,15 @@ public class WaveManager {
                 }
             )
         );
-        // Rabid enemy: one in 6 chance to spawn. (waveNum^2 / 5) + 10
+        // Rabid enemy: 23.6% chance to spawn. (waveNum^2 / 5) + 10
         blueprint.addRule(blueprint.new ConditionalSpawnRule(
                 Rabid.class,
                 waveNum -> {
                     if (waveNum <= 5)
                         return 0; // too early, don't spawn
 
-                    // 1 in 6 chance
-                    if (Math.random() > (1.0 / 6.0))
+                    // 23.6% chance
+                    if (Math.random() > 0.236)
                         return 0;
 
                     // Spawn amount

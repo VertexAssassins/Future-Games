@@ -41,6 +41,12 @@ public class Player {
 
     private boolean isDashing = false;
     private long dashStartTime = 0;
+    // Dash charges
+    private int maxDashCharges = 2;
+    private int dashCharges = 2;
+
+    private final long dashRechargeTime = 2500; // 2.5 seconds per charge
+    private long lastDashUsedTime = 0;          // when the last charge was consumed
     private final long dashDuration = 200; // milliseconds
     private final double dashSpeed = 25.0;
     private double dashVX = 0;
@@ -80,24 +86,32 @@ public class Player {
     }
 
     public void startDash() {
-        if (!isDashing) {
-            double dx = getMovementX();
-            double dy = getMovementY();
-            double length = Math.sqrt(dx * dx + dy * dy);
-            if (length == 0) return; // no direction input
+        // Must have a charge
+        if (dashCharges <= 0) return;
 
-            dx /= length;
-            dy /= length;
+        // Must not already be dashing
+        if (isDashing) return;
 
-            dashVX = dx * dashSpeed;
-            dashVY = dy * dashSpeed;
+        double dx = getMovementX();
+        double dy = getMovementY();
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length == 0) return; // no direction input
 
-            if (Math.abs(dashVX) < 0.05) dashVX = 0;
-            if (Math.abs(dashVY) < 0.05) dashVY = 0;
+        dx /= length;
+        dy /= length;
 
-            isDashing = true;
-            dashStartTime = System.currentTimeMillis();
-        }
+        dashVX = dx * dashSpeed;
+        dashVY = dy * dashSpeed;
+
+        if (Math.abs(dashVX) < 0.05) dashVX = 0;
+        if (Math.abs(dashVY) < 0.05) dashVY = 0;
+
+        isDashing = true;
+        dashStartTime = System.currentTimeMillis();
+
+        // Consume a charge
+        dashCharges--;
+        lastDashUsedTime = System.currentTimeMillis();
     }
 
     public boolean isDashing() {
@@ -196,6 +210,22 @@ public class Player {
                 dashVX *= dashDecay;
                 dashVY *= dashDecay;
                 return;
+            }
+        }
+
+        // --- DASH RECHARGE LOGIC ---
+        if (dashCharges < maxDashCharges) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - lastDashUsedTime;
+
+            // Each charge takes 2.5 seconds
+            int chargesToRestore = (int)(elapsed / dashRechargeTime);
+
+            if (chargesToRestore > 0) {
+                dashCharges = Math.min(maxDashCharges, dashCharges + chargesToRestore);
+
+                // Move the timer forward by the amount restored
+                lastDashUsedTime += chargesToRestore * dashRechargeTime;
             }
         }
 

@@ -23,7 +23,7 @@ public class FlamingSkull extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 2.1;
+        baseSpeed = 2.5;
         baseDamage = 5;
         baseHealth = 10.0;
         baseAttackCooldown = 1500;

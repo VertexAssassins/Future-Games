@@ -23,7 +23,7 @@ public class Brute extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 1.75;
+        baseSpeed = 2.1;
         baseDamage = 20;
         baseHealth = 100.0;
         baseAttackCooldown = 1200;

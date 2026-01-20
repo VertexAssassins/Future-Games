@@ -23,7 +23,7 @@ public class Zombie extends Enemy {
                 e.printStackTrace();
             }
 
-        baseSpeed = 1.5;
+        baseSpeed = 2.0;
         baseDamage = 10.0;
         baseHealth = 20.0;
         baseAttackCooldown = 800;
