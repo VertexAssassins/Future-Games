@@ -35,8 +35,6 @@ public class Enemy {
     // Baseline stats
     protected double baseSpeed;
     protected double baseDamage;
-    protected boolean isMelee;
-    protected boolean isProjectile;
     protected double baseHealth;
     protected long baseAttackCooldown; // default 1 second
     protected int basePoints;

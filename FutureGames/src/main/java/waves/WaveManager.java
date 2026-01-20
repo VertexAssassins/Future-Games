@@ -29,9 +29,9 @@ public class WaveManager {
         this.enemies = enemies;
         this.player = player;
 
-        // Zombie enemy: 15 * 1.15 ^ waveNum
+        // Zombie enemy: increases by 4 * (1.25 ^ waveNum)
         blueprint.addRule(blueprint.new ConditionalSpawnRule(Zombie.class, waveNum -> (int)(4 * Math.pow(1.25, waveNum))));
-        // Brute enemy: increases by ceil(sqrt(waveNum))
+        // Brute enemy: 25% chance to spawn. sqrt(waveNum) + 1
         blueprint.addRule(
             blueprint.new ConditionalSpawnRule(
                 Brute.class,
@@ -48,7 +48,7 @@ public class WaveManager {
                 }
             )
         );
-        // Flaming Skull enemy: one in 5 chance to spawn. (waveNum^2 / 4) + 10
+        // Flaming Skull enemy: 20% chance to spawn. (waveNum^2 / 4) + 5
         blueprint.addRule(blueprint.new ConditionalSpawnRule(
                 FlamingSkull.class,
                 waveNum -> {
