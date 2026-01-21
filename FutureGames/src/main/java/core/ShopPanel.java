@@ -18,7 +18,7 @@ public class ShopPanel {
 
     public ShopPanel() {
         items = new ArrayList<>();
-        items.add(new ShopItem("pistol", "Pistol", 0));       // default unlocked
+        items.add(new ShopItem("pistol", "Pistol", 1));       // default unlocked
         items.add(new ShopItem("revolver", "Revolver", 1));
         items.add(new ShopItem("shotgun", "Shotgun", 1));
         items.add(new ShopItem("smg", "SMG", 1));

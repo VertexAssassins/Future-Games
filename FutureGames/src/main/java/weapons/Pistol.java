@@ -3,8 +3,8 @@ import entities.Projectile;
 import utils.Sound;
 import entities.Player;
 
-public class Handgun extends Weapon {
-    public Handgun(ProjectileSpawner spawner, Player player) {
+public class Pistol extends Weapon {
+    public Pistol(ProjectileSpawner spawner, Player player) {
         super(new WeaponStats(10, 10, 400, 10, 1, 1, 2000), spawner, player);
 
         setFireSound(new Sound("/player/pistol/pistolShoot.wav"));

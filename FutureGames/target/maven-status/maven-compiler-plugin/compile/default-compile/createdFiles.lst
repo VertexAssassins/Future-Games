@@ -61,7 +61,7 @@ weapons\WeaponManager.class
 weapons\WeaponUnlockManager.class
 weapons\Revolver.class
 gameModificationCards\ModifierLibrary$1.class
-weapons\Handgun.class
+weapons\Pistol.class
 waves\WaveBlueprint$ConditionalSpawnRule.class
 core\GameState.class
 utils\MusicManager.class

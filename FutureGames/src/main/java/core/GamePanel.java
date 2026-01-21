@@ -98,7 +98,7 @@ public class GamePanel extends JPanel {
 
     private final WeaponManager weaponManager = new WeaponManager(
         Map.of(
-            WeaponType.HANDGUN, new Handgun(this::spawnProjectile, player),
+            WeaponType.PISTOL, new Pistol(this::spawnProjectile, player),
             WeaponType.REVOLVER, new Revolver(this::spawnProjectile, player),
             WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile, player),
             WeaponType.SMG, new SMG(this::spawnProjectile, player),
@@ -106,7 +106,7 @@ public class GamePanel extends JPanel {
             WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile, player),
             WeaponType.LMG, new LMG(this::spawnProjectile, player)
         ),
-        WeaponType.HANDGUN
+        WeaponType.PISTOL
     );
 
     public GamePanel() {
@@ -153,8 +153,10 @@ public class GamePanel extends JPanel {
         KeyBindings.setup(this, player, index -> {
             switch (index) {
                 case 0 -> {
-                    weaponManager.switchTo(WeaponType.HANDGUN);
-                    player.setWeaponAnimation(WeaponType.HANDGUN);
+                    if (WeaponUnlockManager.isUnlocked("pistol")) {
+                        weaponManager.switchTo(WeaponType.PISTOL);
+                        player.setWeaponAnimation(WeaponType.PISTOL);
+                    }
                 }
                 case 1 -> {
                     if (WeaponUnlockManager.isUnlocked("revolver")) {
@@ -453,7 +455,7 @@ public class GamePanel extends JPanel {
             w.resetStatsToBase();   // you'll add this method
         }
 
-        weaponManager.switchTo(WeaponType.HANDGUN);
+        weaponManager.switchTo(WeaponType.PISTOL);
 
         // -------------------------
         // RESET WAVES

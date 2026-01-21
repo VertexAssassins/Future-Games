@@ -5,7 +5,7 @@ import entities.Player;
 public class WeaponFactory {
     public static Weapon create(WeaponType type, ProjectileSpawner spawner, Player player) {
         return switch (type) {
-            case HANDGUN -> new Handgun(spawner, player);
+            case PISTOL -> new Pistol(spawner, player);
             case REVOLVER -> new Revolver(spawner, player);
             case SHOTGUN -> new PumpShotgun(spawner, player);
             case SMG -> new SMG(spawner, player);

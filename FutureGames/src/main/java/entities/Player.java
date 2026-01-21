@@ -76,7 +76,7 @@ public class Player {
         points = PersistenceManager.load("points", 0);
 
         loadAnimations();
-        setWeaponAnimation(WeaponType.HANDGUN);
+        setWeaponAnimation(WeaponType.PISTOL);
         currentAnimation = currentSet.idle;
     }
 
@@ -313,7 +313,7 @@ public class Player {
 
     public void setWeaponAnimation(WeaponType type) {
     String key = switch (type) {
-        case HANDGUN -> "pistol";
+        case PISTOL -> "pistol";
         case REVOLVER -> "revolver";
         case SHOTGUN -> "shotgun";
         case SMG -> "smg";
