@@ -53,6 +53,15 @@ public class Player {
     private double dashVY = 0;
     private double dashDecay = 0.85; // how quickly dash slows down
 
+    // Dash charge animation (32‑frame spritesheet)
+    private BufferedImage[] dashChargeFrames;  // load 32 frames
+    private int dashChargeFrame = 0;           // current frame index
+    private boolean playingChargeAnim = false; // whether animation is running
+
+    // Timing
+    private long chargeAnimStartTime = 0;
+    private final long chargeDuration = 2500; // matches dashRechargeTime
+
     private double knockbackVX = 0;
     private double knockbackVY = 0;
     private double knockbackDecay = 0.85; // decay factor per frame
@@ -76,6 +85,7 @@ public class Player {
         points = PersistenceManager.load("points", 0);
 
         loadAnimations();
+        loadDashChargeFrames();
         setWeaponAnimation(WeaponType.PISTOL);
         currentAnimation = currentSet.idle;
     }
@@ -116,6 +126,18 @@ public class Player {
 
     public boolean isDashing() {
         return isDashing;
+    }
+
+    public BufferedImage getDashChargeFrame() {
+        return dashChargeFrames[dashChargeFrame];
+    }
+
+    public int getDashCharges() {
+        return dashCharges;
+    }
+
+    public int getMaxDashCharges() {
+        return maxDashCharges;
     }
 
     private double getMovementX() {
@@ -197,6 +219,46 @@ public class Player {
     public int getPoints() { return points; }
     public void resetPoints() { points = 0; }
 
+    private void loadDashChargeFrames() {
+        try {
+            BufferedImage sheet = ImageIO.read(
+                getClass().getResourceAsStream("/player/dash/dashCharge.png")
+            );
+
+            int rows = 6;
+            int cols = 6;
+            int totalFrames = 32;
+
+            int frameWidth = sheet.getWidth() / cols;
+            int frameHeight = sheet.getHeight() / rows;
+
+            dashChargeFrames = new BufferedImage[totalFrames];
+
+            int index = 0;
+
+            for (int y = 0; y < rows; y++) {
+                for (int x = 0; x < cols; x++) {
+
+                    if (index >= totalFrames)
+                        break;
+
+                    dashChargeFrames[index] = sheet.getSubimage(
+                        x * frameWidth,
+                        y * frameHeight,
+                        frameWidth,
+                        frameHeight
+                    );
+
+                    index++;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to load dash charge spritesheet!");
+        }
+    }
+
     public void update() {
         if (isDashing) {
             long now = System.currentTimeMillis();
@@ -227,6 +289,35 @@ public class Player {
                 // Move the timer forward by the amount restored
                 lastDashUsedTime += chargesToRestore * dashRechargeTime;
             }
+        }
+
+        // --- DASH CHARGE ANIMATION LOGIC ---
+        if (dashCharges < maxDashCharges) {
+
+            // Start animation if not already playing
+            if (!playingChargeAnim) {
+                playingChargeAnim = true;
+                chargeAnimStartTime = System.currentTimeMillis();
+                dashChargeFrame = 0;
+            }
+
+            // Progress animation based on time
+            long now = System.currentTimeMillis();
+            long elapsed = now - chargeAnimStartTime;
+
+            // Map elapsed time to 32 frames
+            double progress = Math.min(1.0, (double) elapsed / chargeDuration);
+            dashChargeFrame = (int)(progress * 31); // 0–31
+
+            // If animation finished AND a charge was restored, restart for next charge
+            if (progress >= 1.0) {
+                playingChargeAnim = false; // will restart next update if still not full
+            }
+
+        } else {
+            // Fully charged → freeze on last frame
+            playingChargeAnim = false;
+            dashChargeFrame = 31;
         }
 
         int dx = 0, dy = 0;

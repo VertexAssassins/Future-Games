@@ -3,6 +3,7 @@ package core;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.image.BufferedImage;
 
 import entities.Enemy;
 import entities.HealthPickup;
@@ -105,6 +106,7 @@ public class GameRenderer {
         g.drawString("Points: " + player.getPoints(), panel.getWidth() - 150, 30);
 
         drawHealthBar(g, player);
+        drawDashCharge(g, player);
     }
 
     private void drawHealthBar(Graphics g, Player player) {
@@ -126,6 +128,27 @@ public class GameRenderer {
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString((int)health + " / " + (int)max, x + 60, y + 16);
     }
+
+    private void drawDashCharge(Graphics g, Player player) {
+        // Position under the health bar
+        int x = 30;
+        int y = 120; // 30px below health bar
+
+        BufferedImage frame = player.getDashChargeFrame();
+        int size = frame.getWidth(); // assuming square frames
+
+        // Draw the animation frame
+        g.drawImage(frame, x, y, size, size, null);
+
+        // Draw charge count next to it
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.drawString(player.getDashCharges() + " / " + player.getMaxDashCharges(),
+                    x + size + 10,
+                    y + size - 10);
+    }
+
+    
 
     // -------------------------
     // PAUSE MENU
