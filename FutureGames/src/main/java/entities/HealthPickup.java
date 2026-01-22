@@ -22,7 +22,12 @@ public class HealthPickup {
     }
 
     public Rectangle getBounds() {
-        return new Rectangle((int)x, (int)y, size, size);
+        return new Rectangle(
+            (int)(x - size / 2),
+            (int)(y - size / 2),
+            size,
+            size
+        );
     }
 
     public void draw(Graphics g, CameraManager camera) {
@@ -32,14 +37,14 @@ public class HealthPickup {
                 int wrappedX = (int)(x + dx * Constants.MAP_WIDTH);
                 int wrappedY = (int)(y + dy * Constants.MAP_HEIGHT);
 
-                int drawX = wrappedX - camera.getOffsetX();
-                int drawY = wrappedY - camera.getOffsetY();
-
+                int drawX = wrappedX - camera.getOffsetX() - size / 2;
+                int drawY = wrappedY - camera.getOffsetY() - size / 2;
+                
                 g.setColor(Color.PINK);
                 g.fillOval(drawX, drawY, size, size);
 
                 g.setColor(Color.WHITE);
-                g.drawString("+" + amount, drawX + 3, drawY + 15);
+                g.drawString("+" + amount, drawX + 3, drawY + size - 5);
             }
         }
     }

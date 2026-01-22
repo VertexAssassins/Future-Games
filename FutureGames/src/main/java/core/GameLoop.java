@@ -209,8 +209,8 @@ public class GameLoop extends Thread {
             HealthPickup hp = pickups.get(i);
 
             Rectangle playerBounds = new Rectangle(
-                (int)player.getX(),
-                (int)player.getY(),
+                (int)(player.getX() - player.getSize() / 2),
+                (int)(player.getY() - player.getSize() / 2),
                 player.getSize(),
                 player.getSize()
             );

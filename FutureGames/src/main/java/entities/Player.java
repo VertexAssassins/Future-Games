@@ -154,7 +154,6 @@ public class Player {
         return dy;
     }
 
-
     public void recalcStats() {
         speed = baseSpeed * speedMultiplier;
         maxHealth = baseHealth + maxHealthBonus;
@@ -453,48 +452,42 @@ public class Player {
     }
 
     public void draw(Graphics g, core.CameraManager camera) {
-        int drawX = Constants.SCREEN_WIDTH / 2;
-        int drawY = Constants.SCREEN_HEIGHT / 2;
+        int drawX = (int)(x - camera.getOffsetX());
+        int drawY = (int)(y - camera.getOffsetY());
 
         if (currentAnimation != null) {
             Graphics2D g2d = (Graphics2D) g.create();
 
-            // Draw base sprite
             BufferedImage frame = currentAnimation.getCurrentFrame();
             int w = frame.getWidth();
             int h = frame.getHeight();
 
-            // Convert center to top-left
-            int x = drawX - w / 2;
-            int y = drawY - h / 2;
+            int xTopLeft = drawX - w / 2;
+            int yTopLeft = drawY - h / 2;
 
             if (facingRight) {
-                g2d.drawImage(frame, x, y, null);
+                g2d.drawImage(frame, xTopLeft, yTopLeft, null);
             } else {
                 g2d.drawImage(frame,
-                    x + w, y,      // dest top-left
-                    x,     y + h,  // dest bottom-right
-                    0, 0, w, h,    // source rectangle
+                    xTopLeft + w, yTopLeft,
+                    xTopLeft,     yTopLeft + h,
+                    0, 0, w, h,
                     null
                 );
             }
 
-            // Apply red tint only to non-transparent pixels
+            // Tint overlay (also use w/h)
             if (hitOverlayAlpha > 0f) {
-                BufferedImage tinted = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                BufferedImage tinted = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D tg = tinted.createGraphics();
 
-                // Draw sprite into buffer
-                tg.drawImage(frame, 0, 0, size, size, null);
-
-                // Set red tint with alpha
+                tg.drawImage(frame, 0, 0, w, h, null);
                 tg.setComposite(AlphaComposite.SrcAtop.derive(hitOverlayAlpha));
                 tg.setColor(Color.RED);
-                tg.fillRect(0, 0, size, size);
+                tg.fillRect(0, 0, w, h);
                 tg.dispose();
 
-                // Draw tinted sprite
-                g2d.drawImage(tinted, drawX - size / 2, drawY - size / 2, null);
+                g2d.drawImage(tinted, xTopLeft, yTopLeft, null);
             }
 
             g2d.dispose();
@@ -532,7 +525,7 @@ public class Player {
     }
 
     public double getColliderRadius() {
-        return size * 0.5; // or 0.55 if you want a slight buffer
+        return size * 0.3; // or 0.55 if you want a slight buffer
     }
 
     public void reset() {
