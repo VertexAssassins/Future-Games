@@ -1,9 +1,6 @@
 package entities;
 
 import java.awt.*;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 public class Rabid extends Enemy {
     public Rabid(double worldX, double worldY) {
@@ -17,11 +14,7 @@ public class Rabid extends Enemy {
             0.7     // chaseStrength (less direct, more tactical)
         );
 
-        try {
-                setSprite(ImageIO.read(getClass().getResource("/enemies/rabid/rabid.png")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        loadRandomSprite("/enemies/rabid/", "009");
 
         baseSpeed = 2.75;
         baseDamage = 25;
@@ -29,7 +22,7 @@ public class Rabid extends Enemy {
         baseAttackCooldown = 600;
         burstCount = 3;
         basePoints = 5;
-        size = 50;
+        size = 55;
         color = Color.BLUE;
 
         burstRemaining = burstCount;

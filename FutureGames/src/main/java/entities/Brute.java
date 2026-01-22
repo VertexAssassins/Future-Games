@@ -1,9 +1,6 @@
 package entities;
 
 import java.awt.*;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 public class Brute extends Enemy {
     public Brute(double worldX, double worldY) {
@@ -17,11 +14,7 @@ public class Brute extends Enemy {
             3.0     // chaseStrength (extremely aggressive)
         );
 
-        try {
-                setSprite(ImageIO.read(getClass().getResource("/enemies/brute/brute.png")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        loadRandomSprite("/enemies/brute/", "025");
 
         baseSpeed = 2.1;
         baseDamage = 20;

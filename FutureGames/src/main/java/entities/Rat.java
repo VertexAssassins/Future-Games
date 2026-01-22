@@ -1,9 +1,6 @@
 package entities;
 
 import java.awt.*;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 public class Rat extends Enemy {
     public Rat(double worldX, double worldY) {
@@ -17,11 +14,7 @@ public class Rat extends Enemy {
             0.6      // chaseStrength (pack movement)
         );
 
-        try {
-                setSprite(ImageIO.read(getClass().getResource("/enemies/rat/rat.png")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        loadRandomSprite("/enemies/rat/", "001");
 
         baseSpeed = 2.25;
         baseDamage = 1;
@@ -29,7 +22,7 @@ public class Rat extends Enemy {
         baseAttackCooldown = 500;
         burstCount = 5;
         basePoints = 1;
-        size = 25;
+        size = 45;
         color = Color.GREEN;
 
         burstRemaining = burstCount;

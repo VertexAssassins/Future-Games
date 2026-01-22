@@ -3,6 +3,8 @@ package entities;
 import java.awt.*;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import utils.Constants;
 import utils.Sound;
 
@@ -256,6 +258,19 @@ public class Enemy {
         return delta;
     }
 
+    protected void loadRandomSprite(String folderPath, String baseName) {
+        int variant = (int)(Math.random() * 3) + 1; // 1–3
+        String path = folderPath + baseName + "_" + variant + ".png";
+
+        try {
+            BufferedImage img = ImageIO.read(getClass().getResource(path));
+            setSprite(img);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to load enemy sprite: " + path);
+        }
+    }
+
     public void draw(Graphics g, CameraManager camera) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
@@ -264,14 +279,14 @@ public class Enemy {
                 int drawX = (int)(wrappedX - camera.getOffsetX());
                 int drawY = (int)(wrappedY - camera.getOffsetY());
 
-            //DEBUG COLLIDER RADIUS
+            /*DEBUG COLLIDER RADIUS
                 int r = (int) getColliderRadius();
                 int centerX = drawX;
                 int centerY = drawY;
 
                 g.setColor(Color.RED);
                 g.drawOval(centerX - r, centerY - r, r * 2, r * 2);
-            // END DEBUG
+            END DEBUG */
 
                 if (sprite != null) {
                     Graphics2D g2d = (Graphics2D) g.create();

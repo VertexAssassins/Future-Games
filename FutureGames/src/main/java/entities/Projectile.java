@@ -5,6 +5,9 @@ import java.util.List;
 import utils.Quadtree;
 import utils.CollisionResolver;
 import utils.Constants;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+
 
 public class Projectile {
     private double x, y;
@@ -15,7 +18,8 @@ public class Projectile {
     private final Player owner;
     private double traveled = 0;
 
-    private final int size = 10;
+    private final int size = 5;
+    private BufferedImage sprite;
 
     public Projectile(double x, double y, double angle, double speed, double range, double damage, Player owner) {
         this.x = x;
@@ -25,6 +29,15 @@ public class Projectile {
         this.range = range;
         this.damage = damage;
         this.owner = owner;
+
+        try {
+            sprite = ImageIO.read(
+                getClass().getResourceAsStream("/player/bullet/bullet.png")
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to load bullet sprite!");
+        }
     }
 
     public double getX() { return x; }
@@ -159,17 +172,29 @@ public class Projectile {
                 // Skip off-screen copies
                 if (drawX + size < 0 || drawY + size < 0 || drawX > mapWidth || drawY > mapHeight) continue;
 
-                g.setColor(Color.YELLOW);
-                g.fillOval(drawX - size / 2, drawY - size / 2, size, size);
+                int w = sprite.getWidth();
+                int h = sprite.getHeight();
 
-                g.setColor(Color.RED);
-                g.drawLine(drawX, drawY,
-                    (int) (wrappedX + Math.cos(angle) * speed - cameraX),
-                    (int) (wrappedY + Math.sin(angle) * speed - cameraY));
+                Graphics2D g2 = (Graphics2D) g.create();
 
-                Rectangle box = getSweptAABB();
-                g.setColor(Color.CYAN);
-                g.drawRect(box.x - (int) cameraX, box.y - (int) cameraY, box.width, box.height);
+                // Rotate around the bullet's center
+                g2.rotate(angle + Math.PI, drawX, drawY);
+
+                int scale = 2; // Scaling factor
+                int scaledW = w * scale;
+                int scaledH = h * scale;
+
+                // Draw centered
+                g2.drawImage(
+                    sprite,
+                    drawX - scaledW / 2,
+                    drawY - scaledH / 2,
+                    scaledW,
+                    scaledH,
+                    null
+                );
+
+                g2.dispose();
             }
         }
     }

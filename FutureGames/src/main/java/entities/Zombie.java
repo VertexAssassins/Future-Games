@@ -1,9 +1,6 @@
 package entities;
 
 import java.awt.*;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 public class Zombie extends Enemy {
     public Zombie(double worldX, double worldY) {
@@ -17,11 +14,7 @@ public class Zombie extends Enemy {
             0.5     // chaseStrength (slow, inevitable)
         );
 
-            try {
-                setSprite(ImageIO.read(getClass().getResource("/enemies/zombie/zombie.png")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        loadRandomSprite("/enemies/zombie/", "020");
 
         baseSpeed = 2.0;
         baseDamage = 10.0;
@@ -30,7 +23,7 @@ public class Zombie extends Enemy {
         burstCount = 1;
         burstInterval = 150;
         basePoints = 2;
-        size = 50;
+        size = 55;
         color = Color.CYAN;
 
         burstRemaining = burstCount;

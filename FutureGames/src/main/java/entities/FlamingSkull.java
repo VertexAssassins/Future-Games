@@ -1,9 +1,6 @@
 package entities;
 
 import java.awt.*;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 public class FlamingSkull extends Enemy {
     public FlamingSkull(double worldX, double worldY) {
@@ -17,11 +14,7 @@ public class FlamingSkull extends Enemy {
             4.0     // chaseStrength (hyper-aggressive)
         );
 
-        try {
-                setSprite(ImageIO.read(getClass().getResource("/enemies/flamingSkull/flamingSkull.png")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        loadRandomSprite("/enemies/flamingSkull/", "008");
 
         baseSpeed = 2.5;
         baseDamage = 5;
@@ -29,7 +22,7 @@ public class FlamingSkull extends Enemy {
         baseAttackCooldown = 1500;
         burstCount = 1;
         basePoints = 3;
-        size = 40;
+        size = 50;
         color = Color.RED;
 
         burstRemaining = burstCount;
