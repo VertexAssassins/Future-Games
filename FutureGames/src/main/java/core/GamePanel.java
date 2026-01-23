@@ -449,6 +449,8 @@ public class GamePanel extends JPanel {
             w.resetStatsToBase();   // you'll add this method
         }
 
+        weaponManager.applyPermanentUpgrades();
+
         weaponManager.switchTo(WeaponType.PISTOL);
 
         // -------------------------

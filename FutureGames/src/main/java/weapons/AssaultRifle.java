@@ -5,7 +5,7 @@ import entities.Player;
 
 public class AssaultRifle extends Weapon {
     public AssaultRifle(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(10, 10, 800, 20, 7.5, 45, 2000), spawner, player);
+        super(new WeaponStats(10, 15, 800, 20, 7.5, 45, 3000, "assaultrifle"), spawner, player);
 
         setFireSound(new Sound("/player/assaultrifle/assaultrifleShoot.wav"));
         setReloadSound(new Sound("/player/assaultrifle/assaultrifleReload.wav"));
@@ -23,5 +23,17 @@ public class AssaultRifle extends Weapon {
             Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
             spawner.spawn(p);
         }
+    }
+
+    @Override
+    public void applyPermanentUpgrade() {
+        // +50% damage
+        stats.damage = stats.baseDamage * 1.5;
+        //incraese ammo to 60
+        stats.maxAmmo = 60;
+        //reduce spread to 7.5
+        stats.spread = 7.5;
+        //increase reload speed by 50%
+        stats.reloadTime = (long)(stats.baseReloadTime * 0.5);
     }
 }

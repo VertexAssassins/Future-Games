@@ -5,7 +5,7 @@ import entities.Player;
 
 public class Pistol extends Weapon {
     public Pistol(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(10, 10, 400, 10, 1, 1, 2000), spawner, player);
+        super(new WeaponStats(10, 10, 400, 10, 1, 1, 2000, "pistol"), spawner, player);
 
         setFireSound(new Sound("/player/pistol/pistolShoot.wav"));
         setReloadSound(new Sound("/player/pistol/pistolReload.wav"));
@@ -23,5 +23,17 @@ public class Pistol extends Weapon {
             Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
             spawner.spawn(p);
         }
+    }
+
+    @Override
+    public void applyPermanentUpgrade() {
+        // +50% damage
+        stats.damage = stats.baseDamage * 1.5;
+        //incraese ammo to 3
+        stats.maxAmmo = 3;
+        //increase reload speed by 25%
+        stats.reloadTime = (long)(stats.baseReloadTime * 0.75);
+        //increase rate of fire by 25%
+        stats.rateOfFire = (long)(stats.baseRateOfFire * 1.25);
     }
 }

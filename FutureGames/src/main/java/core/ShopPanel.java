@@ -18,13 +18,13 @@ public class ShopPanel {
 
     public ShopPanel() {
         items = new ArrayList<>();
-        items.add(new ShopItem("pistol", "Pistol", 1));       // default unlocked
-        items.add(new ShopItem("revolver", "Revolver", 1));
-        items.add(new ShopItem("shotgun", "Shotgun", 1));
-        items.add(new ShopItem("smg", "SMG", 1));
-        items.add(new ShopItem("assaultrifle", "Assault Rifle", 1));
-        items.add(new ShopItem("autoshotgun", "Auto Shotgun", 1));
-        items.add(new ShopItem("lmg", "LMG", 1));
+        items.add(new ShopItem("pistol", "Pistol", 0, 25));       // default unlocked
+        items.add(new ShopItem("revolver", "Revolver", 100, 200));
+        items.add(new ShopItem("shotgun", "Shotgun", 400, 600));
+        items.add(new ShopItem("smg", "SMG", 750, 1000));
+        items.add(new ShopItem("assaultrifle", "Assault Rifle", 1500, 3000));
+        items.add(new ShopItem("autoshotgun", "Auto Shotgun", 5000, 7500));
+        items.add(new ShopItem("lmg", "LMG", 10000, 15000));
 
         for (ShopItem item : items) {
             try {
@@ -86,6 +86,23 @@ public class ShopPanel {
             g.setColor(Color.WHITE);
             g.drawString("Unlock", x + 275, y + 48);
         }
+
+        boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
+
+        if (unlocked) {
+            if (!upgraded) {
+                g.setColor(Color.CYAN);
+                g.drawString("Upgrade Available", x + 100, y + 60);
+
+                g.setColor(Color.DARK_GRAY);
+                g.fillRect(x + 250, y + 20, 120, 40);
+                g.setColor(Color.WHITE);
+                g.drawString("Upgrade", x + 275, y + 48);
+            } else {
+                g.setColor(Color.GREEN);
+                g.drawString("Upgraded!", x + 100, y + 60);
+            }
+        }
     }
 
     public void handleScroll(int rotation) {
@@ -99,10 +116,16 @@ public class ShopPanel {
     int y = 150 - scrollOffset;
 
         for (ShopItem item : items) {
-            Rectangle button = new Rectangle(350, y + 20, 120, 40);
+            Rectangle unlockButton = new Rectangle(350, y + 20, 120, 40);
 
-            if (button.contains(mx, my)) {
+            if (unlockButton.contains(mx, my)) {
                 tryUnlock(item, player);
+            }
+
+            Rectangle upgradeButton = new Rectangle(350, y + 70, 120, 40);
+
+            if (upgradeButton.contains(mx, my)) {
+                tryUpgrade(item, player);
             }
 
             y += 120;
@@ -115,6 +138,21 @@ public class ShopPanel {
         if (player.getPoints() >= item.price) {
             player.addPoints(-item.price);
             WeaponUnlockManager.unlock(item.weaponId);
+        } else {
+            System.out.println("Not enough points");
+        }
+    }
+
+    private void tryUpgrade(ShopItem item, Player player) {
+        if (!WeaponUnlockManager.isUnlocked(item.weaponId)) return;
+        if (PersistenceManager.loadWeaponUpgraded(item.weaponId)) return;
+
+        int cost = item.upgradeCost;
+
+        if (player.getPoints() >= cost) {
+            player.addPoints(-cost);
+            PersistenceManager.saveWeaponUpgraded(item.weaponId, true);
+            System.out.println(item.name + " permanently upgraded!");
         } else {
             System.out.println("Not enough points");
         }

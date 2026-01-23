@@ -6,7 +6,7 @@ import entities.Player;
 public class PumpShotgun extends Weapon {
 
     public PumpShotgun(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(8, 30, 400, 10, 1, 2, 2500), spawner, player);
+        super(new WeaponStats(8, 30, 400, 10, 1, 2, 2500, "pumpshotgun"), spawner, player);
 
         setFireSound(new Sound("/player/shotgun/shotgunShoot.wav"));
         setReloadSound(new Sound("/player/shotgun/shotgunReload.wav"));
@@ -24,6 +24,18 @@ public class PumpShotgun extends Weapon {
             Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
             spawner.spawn(p);
         }
+    }
+
+    @Override
+    public void applyPermanentUpgrade() {
+        // +25% damage
+        stats.damage = stats.baseDamage * 1.25;
+        //incraese ammo to 4
+        stats.maxAmmo = 4;
+        //reduce spread to 20
+        stats.spread = 20;
+        //increase reload speed by 25%
+        stats.reloadTime = (long)(stats.baseReloadTime * 0.75);
     }
 }
 

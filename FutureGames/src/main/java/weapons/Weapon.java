@@ -1,7 +1,6 @@
 package weapons;
 
-import java.awt.Point;
-
+import core.PersistenceManager;
 import entities.Player;
 import utils.Sound;
 
@@ -32,6 +31,10 @@ public abstract class Weapon {
     public void resetStatsToBase() {
         stats.resetToBase();   // delegate to WeaponStats
         ammo = stats.maxAmmo;
+
+        if (PersistenceManager.loadWeaponUpgraded(stats.weaponId)) {
+            applyPermanentUpgrade();
+        }
     }
 
    public boolean tryFire(double x, double y, double angle) {
@@ -56,6 +59,7 @@ public abstract class Weapon {
     }
 
     protected abstract void spawnProjectile(double x, double y, double angle);
+    public abstract void applyPermanentUpgrade();
 
     public void reload() {
         if (!reloading) {

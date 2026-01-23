@@ -20,4 +20,24 @@ public class PersistenceManager {
     public static boolean load(String key, boolean defaultValue) {
         return prefs.getBoolean(key, defaultValue);
     }
+
+    public static void saveWeaponUpgraded(String weaponId, boolean upgraded) {
+        prefs.putBoolean("weapon_upgraded_" + weaponId, upgraded);
+    }
+
+    public static boolean loadWeaponUpgraded(String weaponId) {
+        return prefs.getBoolean("weapon_upgraded_" + weaponId, false);
+    }
+
+    public static void resetAllWeaponUpgrades() {
+        try {
+            for (String key : prefs.keys()) {
+                if (key.startsWith("weapon_upgraded_")) {
+                    prefs.remove(key);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

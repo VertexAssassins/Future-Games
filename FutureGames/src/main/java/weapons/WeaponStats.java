@@ -19,8 +19,10 @@ public class WeaponStats {
     public final int    baseMaxAmmo;
     public final long   baseReloadTime;
 
+    public final String weaponId;
+
     public WeaponStats(double damage, double spread, double range, double projectileSpeed,
-                       double rateOfFire, int maxAmmo, long reloadTime) {
+                       double rateOfFire, int maxAmmo, long reloadTime, String weaponId) {
 
         // store base values
         this.baseDamage = damage;
@@ -30,6 +32,7 @@ public class WeaponStats {
         this.baseRateOfFire = rateOfFire;
         this.baseMaxAmmo = maxAmmo;
         this.baseReloadTime = reloadTime;
+        this.weaponId = weaponId;
 
         // initialize current values from base
         this.damage = damage;

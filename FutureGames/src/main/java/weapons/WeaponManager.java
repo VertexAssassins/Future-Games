@@ -1,6 +1,8 @@
 package weapons;
 import java.util.Map;
 
+import core.PersistenceManager;
+
 public class WeaponManager {
     private final Map<WeaponType, Weapon> weapons;
     private WeaponType current;
@@ -8,6 +10,16 @@ public class WeaponManager {
     public WeaponManager(Map<WeaponType, Weapon> weapons, WeaponType defaultWeapon) {
         this.weapons = weapons;
         this.current = defaultWeapon;
+
+        applyPermanentUpgrades();
+    }
+
+    public void applyPermanentUpgrades() {
+        for (Weapon w : weapons.values()) {
+            if (PersistenceManager.loadWeaponUpgraded(w.getStats().weaponId)) {
+                w.applyPermanentUpgrade();
+            }
+        }
     }
 
     public void increaseAmmoCapacity(double percent) {
