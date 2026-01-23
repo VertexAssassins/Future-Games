@@ -3,6 +3,9 @@ package core;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.ImageIcon;
+
 import java.awt.image.BufferedImage;
 
 import entities.Enemy;
@@ -11,7 +14,6 @@ import entities.Player;
 import entities.Projectile;
 import gameModificationCards.ModifierCard;
 import gameModificationCards.ModifierType;
-import gameModificationCards.Rarity;
 import waves.WaveManager;
 import weapons.WeaponManager;
 
@@ -19,8 +21,39 @@ public class GameRenderer {
 
     private final GamePanel panel;
 
+    private Image cardWhite;
+    private Image cardGreen;
+    private Image cardBlue;
+    private Image pauseBorder;
+    private Image pauseResume;
+    private Image pauseQuit;
+
+    private Font easyText;
+
     public GameRenderer(GamePanel panel) {
         this.panel = panel;
+
+        cardWhite = new ImageIcon(getClass().getResource("/ui/Border Template White.png")).getImage();
+        cardGreen = new ImageIcon(getClass().getResource("/ui/Border Template Green.png")).getImage();
+        cardBlue  = new ImageIcon(getClass().getResource("/ui/Border Template Blue.png")).getImage();
+        pauseBorder = new ImageIcon(getClass().getResource("/ui/Border Template.png")).getImage();
+        pauseResume = new ImageIcon(getClass().getResource("/ui/Play Button.png")).getImage();
+        pauseQuit   = new ImageIcon(getClass().getResource("/ui/Quit Button.png")).getImage();
+
+        pauseResume = scale(pauseResume, 128, 128);
+        pauseQuit   = scale(pauseQuit,   128, 128);
+
+        try {
+            easyText = Font.createFont(
+                    Font.TRUETYPE_FONT,
+                    getClass().getResourceAsStream("/fonts/EASYTEXT.TTF")
+            );
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(easyText);
+        } catch (Exception e) {
+            e.printStackTrace();
+            easyText = new Font("Monospaced", Font.BOLD, 20); // fallback
+        }
     }
 
     // -------------------------
@@ -93,7 +126,7 @@ public class GameRenderer {
     // HUD (wave, points, health)
     // -------------------------
     private void drawHUD(Graphics g) {
-        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.setFont(easyText.deriveFont(Font.BOLD, 15f));
         g.setColor(Color.WHITE);
 
         WaveManager waves = panel.getWaveManager();
@@ -125,7 +158,7 @@ public class GameRenderer {
         g.setColor(Color.WHITE);
         g.drawRect(x, y, w, h);
 
-        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.setFont(easyText.deriveFont(Font.BOLD, 15f));
         g.drawString((int)health + " / " + (int)max, x + 60, y + 16);
     }
 
@@ -142,13 +175,11 @@ public class GameRenderer {
 
         // Draw charge count next to it
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.setFont(easyText.deriveFont(Font.BOLD, 15f));
         g.drawString(player.getDashCharges() + " / " + player.getMaxDashCharges(),
                     x + size + 10,
                     y + size - 10);
     }
-
-    
 
     // -------------------------
     // PAUSE MENU
@@ -156,31 +187,106 @@ public class GameRenderer {
     private void drawPauseMenu(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
-        int cx = panel.getWidth() / 2;
-        int cy = panel.getHeight() / 2;
+        int screenW = panel.getWidth();
+        int screenH = panel.getHeight();
 
         // Dim background
         g2.setColor(new Color(0, 0, 0, 150));
-        g2.fillRect(0, 0, panel.getWidth(), panel.getHeight());
+        g2.fillRect(0, 0, screenW, screenH);
 
-        // Menu box
+        // Panel size
+        int panelW = 720;
+        int panelH = 720;
+
+        int x = (screenW - panelW) / 2;
+        int y = (screenH - panelH) / 2;
+
+        // Background
+        g2.drawImage(pauseBorder, x, y, panelW, panelH, null);
+
+        // -------------------------
+        // TITLE
+        // -------------------------
+        g2.setFont(easyText.deriveFont(Font.BOLD, 64f));
         g2.setColor(Color.WHITE);
-        g2.fillRoundRect(cx - 180, cy - 180, 360, 360, 20, 20);
 
-        g2.setColor(Color.BLACK);
-        g2.setFont(new Font("Arial", Font.BOLD, 32));
-        g2.drawString("PAUSED", cx - 60, cy - 120);
+        String title = "PAUSED";
+        FontMetrics fm = g2.getFontMetrics();
+        int titleX = x + (panelW - fm.stringWidth(title)) / 2;
+        int titleY = y + 120;
 
-        // Buttons
-        drawButton(g2, panel.getResumeButton(), "Resume");
-        drawButton(g2, panel.getPauseQuitButton(), "Quit");
+        g2.drawString(title, titleX, titleY);
 
-        // Sliders
-        g2.drawString("Music Volume", cx - 60, cy + 100);
+        // -------------------------
+        // BUTTONS (scaled)
+        // -------------------------
+
+        int buttonSpacing = 110;   // more spacing for bigger buttons
+        int buttonStartY = y + 120;
+
+        int btnW = pauseResume.getWidth(null);
+        int btnH = pauseResume.getHeight(null);
+
+        // Resume
+        Rectangle resumeRect = panel.getResumeButton();
+        resumeRect.setBounds(
+                x + (panelW - btnW) / 2,
+                buttonStartY,
+                btnW,
+                btnH
+        );
+        g2.drawImage(pauseResume, resumeRect.x, resumeRect.y, btnW, btnH, null);
+
+        // Quit
+        Rectangle quitRect = panel.getPauseQuitButton();
+        quitRect.setBounds(
+                x + (panelW - btnW) / 2,
+                buttonStartY + buttonSpacing,
+                btnW,
+                btnH
+        );
+        g2.drawImage(pauseQuit, quitRect.x, quitRect.y, btnW, btnH, null);
+
+        // -------------------------
+        // SLIDERS (centered)
+        // -------------------------
+
+        g2.setFont(easyText.deriveFont(Font.BOLD, 32f));
+        g2.setColor(Color.WHITE);
+
+        FontMetrics fm32 = g2.getFontMetrics();   // IMPORTANT FIX
+
+        int sliderWidth = 300;
+        int sliderHeight = 8;
+
+        int centerX = x + panelW / 2;
+        int sliderX = centerX - (sliderWidth / 2);
+
+        int musicLabelY = y + 420;
+        int musicSliderY = musicLabelY + 40;
+
+        int sfxLabelY = musicSliderY + 80;
+        int sfxSliderY = sfxLabelY + 40;
+
+        // MUSIC
+        String musicText = "Music Volume";
+        int musicTextX = centerX - (fm32.stringWidth(musicText) / 2);
+        g2.drawString(musicText, musicTextX, musicLabelY);
+
+        panel.getMusicSlider().setFillColor(Color.RED);
+        panel.getMusicSlider().setBounds(sliderX, musicSliderY, sliderWidth, sliderHeight);
         panel.getMusicSlider().draw(g2);
 
-        g2.drawString("SFX Volume", cx - 50, cy + 150);
+        // SFX
+        String sfxText = "SFX Volume";
+        int sfxTextX = centerX - (fm32.stringWidth(sfxText) / 2);
+
+        panel.getSfxSlider().setFillColor(Color.RED);
+        panel.getSfxSlider().setBounds(sliderX, sfxSliderY, sliderWidth, sliderHeight);
         panel.getSfxSlider().draw(g2);
+
+        g2.setColor(Color.WHITE);
+        g2.drawString(sfxText, sfxTextX, sfxLabelY);
     }
 
     private void drawButton(Graphics2D g2, Rectangle r, String text) {
@@ -189,6 +295,10 @@ public class GameRenderer {
         g2.setColor(Color.BLACK);
         g2.draw(r);
         g2.drawString(text, r.x + 55, r.y + 32);
+    }
+
+    private Image scale(Image img, int w, int h) {
+        return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
     }
 
     // -------------------------
@@ -228,38 +338,46 @@ public class GameRenderer {
 
     private void drawSingleCard(Graphics2D g2, ModifierCard card, int x, int y, int w, int h) {
 
-        // Background
-        g2.setColor(new Color(30, 30, 30));
-        g2.fillRoundRect(x, y, w, h, 20, 20);
+        // Pick template based on rarity
+        Image template = switch (card.rarity) {
+            case STANDARD -> cardWhite;
+            case UNCOMMON -> cardGreen;
+            case RARE -> cardBlue;
+        };
 
-        // Rarity border
-        g2.setStroke(new BasicStroke(4));
-        g2.setColor(getRarityColor(card.rarity));
-        g2.drawRoundRect(x, y, w, h, 20, 20);
+        // Draw the template scaled to card size
+        g2.drawImage(template, x, y, w, h, null);
 
-        // Title
-        g2.setFont(new Font("Arial", Font.BOLD, 22));
+        // Title (rarity text)
+        g2.setFont(easyText.deriveFont(Font.BOLD, 20f));
         g2.setColor(Color.WHITE);
-        g2.drawString(card.rarity.toString(), x + 15, y + 35);
+
+        String rarityText = card.rarity.toString();
+        FontMetrics fm = g2.getFontMetrics();
+
+        // Center horizontally inside the card
+        int textWidth = fm.stringWidth(rarityText);
+        int centerX = x + (w - textWidth) / 2;
+
+        g2.drawString(rarityText, centerX, y + 40);
+
 
         // Good modifier
-        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2.setFont(easyText.deriveFont(Font.BOLD, 20f));
         g2.setColor(new Color(120, 255, 120));
-        g2.drawString("+" + card.good.value + "% " + formatModifier(card.good.type),
-                    x + 15, y + 75);
+        g2.drawString(
+                "+" + card.good.value + "% " + formatModifier(card.good.type),
+                x + 20,
+                y + 80
+        );
 
         // Bad modifier
         g2.setColor(new Color(255, 120, 120));
-        g2.drawString("+" + card.bad.value + "% " + formatModifier(card.bad.type),
-                    x + 15, y + 115);
-    }
-
-    private Color getRarityColor(Rarity rarity) {
-        return switch (rarity) {
-            case STANDARD -> new Color(180, 180, 180);
-            case UNCOMMON -> new Color(80, 200, 120);
-            case RARE -> new Color(120, 160, 255);
-        };
+        g2.drawString(
+                "+" + card.bad.value + "% " + formatModifier(card.bad.type),
+                x + 20,
+                y + 120
+        );
     }
 
     private String formatModifier(ModifierType type) {
@@ -292,12 +410,12 @@ public class GameRenderer {
         panel.quitButton  = new Rectangle(cx - 100, cy + 160, 200, 50);
 
         g.setColor(Color.YELLOW);
-        g.setFont(new Font("Arial", Font.BOLD, 40));
+        g.setFont(easyText.deriveFont(Font.BOLD, 20f));
         g.drawString("Final Score: " + player.getPoints(),
                 panel.getWidth() / 2 - 100, panel.getHeight() / 2);
 
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 48));
+        g.setFont(easyText.deriveFont(Font.BOLD, 48f));
         g.drawString("Game Over",
                 panel.getWidth() / 2 - 150, panel.getHeight() / 2 - 80);
 
@@ -328,7 +446,7 @@ public class GameRenderer {
         g2.fillRoundRect(10, 10, 350, 300, 15, 15);
 
         g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Consolas", Font.PLAIN, 16));
+        g2.setFont(easyText.deriveFont(Font.BOLD, 20f));
 
         g2.drawString("=== DEBUG MODIFIERS ===", x, y); y += 25;
 

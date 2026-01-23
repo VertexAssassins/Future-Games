@@ -32,7 +32,7 @@ public class GamePanel extends JPanel {
     private final List<HealthPickup> healthPickups = new ArrayList<>();
     
     private GameState gameState = GameState.PLAYING;
-    public Rectangle retryButton = new Rectangle( getWidth() / 2 - 100, getHeight() / 2, 200, 50 );
+    public Rectangle retryButton = new Rectangle( getWidth() / 2 - 200, getHeight() / 2, 400, 100 );
     public Rectangle shopButton;
     public Rectangle quitButton;
     public Rectangle continueButton;
@@ -393,12 +393,6 @@ public class GamePanel extends JPanel {
         if (gameState == GameState.PAUSED) {
             resumeButton = new Rectangle(cx - 100, cy - 40, 200, 50);
             pauseQuitButton = new Rectangle(cx - 100, cy + 30, 200, 50);
-
-            musicSlider.x = cx - 120;
-            musicSlider.y = cy + 110;
-
-            sfxSlider.x = cx - 120;
-            sfxSlider.y = cy + 160;
         }
 
         if (gameState == GameState.GAME_OVER) {
