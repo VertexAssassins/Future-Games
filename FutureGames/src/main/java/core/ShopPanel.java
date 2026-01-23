@@ -16,6 +16,14 @@ public class ShopPanel {
     private int scrollOffset = 0;
     private int maxScroll = 0;
 
+    private int panelX;
+    private int panelY;
+
+    private Image borderPanel;
+    private Image unlockButtonImg;
+    private Image upgradeButtonImg;
+    private Font easyText;
+
     public ShopPanel() {
         items = new ArrayList<>();
         items.add(new ShopItem("pistol", "Pistol", 0, 25));       // default unlocked
@@ -36,72 +44,134 @@ public class ShopPanel {
                 e.printStackTrace();
             }
         }
-    }
 
-    public void draw(Graphics g, Player player, int width, int height) {
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 36));
-        g.drawString("Weapon Shop", width / 2 - 120, 80);
-
-        int y = 150 - scrollOffset;
-
-        for (ShopItem item : items) {
-            drawItem(g, item, player, 100, y);
-            y += 120;
+        try {
+            borderPanel = ImageIO.read(getClass().getResource("/ui/Border Template.png"));
+            unlockButtonImg = ImageIO.read(getClass().getResource("/ui/Unlock Button.png"));
+            upgradeButtonImg = ImageIO.read(getClass().getResource("/ui/Upgrade Button.png"));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        // Update max scroll
-        int contentHeight = items.size() * 120;
-        int visibleHeight = height - 200;
+        try {
+            easyText = Font.createFont(Font.TRUETYPE_FONT,
+                    getClass().getResourceAsStream("/fonts/EASYTEXT.TTF"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            easyText = new Font("Arial", Font.BOLD, 20); // fallback
+        }
+    }
+
+   public void draw(Graphics g, Player player, int width, int height) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        int panelW = 900;
+        int panelH = 900;
+
+        int x = (width - panelW) / 2;
+        int y = (height - panelH) / 2;
+
+        panelX = x;
+        panelY = y;
+
+        // Draw panel background
+        g2.drawImage(borderPanel, x, y, panelW, panelH, null);
+
+        // Title
+        String title = "Weapon Shop";
+        g2.setFont(easyText.deriveFont(Font.BOLD, 36f));
+
+        FontMetrics fm = g2.getFontMetrics();
+        int titleWidth = fm.stringWidth(title);
+
+        int titleX = x + (panelW - titleWidth) / 2;
+        int titleY = y + 100;
+
+        g2.setColor(Color.WHITE);
+        g2.drawString(title, titleX, titleY);
+
+        //Ponits display
+        String pointsText = "Points: " + player.getPoints();
+        g2.setFont(easyText.deriveFont(Font.BOLD, 28f));
+
+        FontMetrics fmPoints = g2.getFontMetrics();
+        int pointsWidth = fmPoints.stringWidth(pointsText);
+
+        int pointsX = x + panelW - pointsWidth - 30;
+        int pointsY = y + 100;
+
+        g2.setColor(Color.YELLOW);
+        g2.drawString(pointsText, pointsX, pointsY);
+
+        // Scrollable content area
+        int contentStartY = y + 180;
+        int itemY = contentStartY - scrollOffset;
+
+        for (ShopItem item : items) {
+            drawItem(g2, item, player, x + 120, itemY);
+            itemY += 140;
+        }
+
+        // Update scroll limits
+        int contentHeight = items.size() * 140;
+        int visibleHeight = panelH - 250;
         maxScroll = Math.max(0, contentHeight - visibleHeight);
     }
 
-    private void drawItem(Graphics g, ShopItem item, Player player, int x, int y) {
-        // Placeholder image box
+    private void drawItem(Graphics2D g, ShopItem item, Player player, int x, int y) {
+
+        // Weapon icon
         if (item.icon != null) {
-            g.drawImage(item.icon, x, y, 80, 80, null);
+            g.drawImage(item.icon, x, y, 100, 100, null);
         } else {
             g.setColor(Color.GRAY);
-            g.fillRect(x, y, 80, 80);
+            g.fillRect(x, y, 100, 100);
         }
 
         // Weapon name
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString(item.name, x + 100, y + 30);
+        g.setFont(easyText.deriveFont(Font.BOLD, 20f));
+        g.drawString(item.name, x + 130, y + 40);
 
-        // Price or "Unlocked"
         boolean unlocked = WeaponUnlockManager.isUnlocked(item.weaponId);
-
-        if (unlocked) {
-            g.setColor(Color.GREEN);
-            g.drawString("Unlocked", x + 100, y + 60);
-        } else {
-            g.setColor(Color.YELLOW);
-            g.drawString("Price: " + item.price, x + 100, y + 60);
-
-            // Draw unlock button
-            g.setColor(Color.DARK_GRAY);
-            g.fillRect(x + 250, y + 20, 120, 40);
-            g.setColor(Color.WHITE);
-            g.drawString("Unlock", x + 275, y + 48);
-        }
-
         boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
 
-        if (unlocked) {
+        // Status text
+        g.setFont(easyText.deriveFont(Font.BOLD, 22f));
+
+        if (!unlocked) {
+            g.setColor(Color.YELLOW);
+            g.drawString("Price: " + item.price, x + 130, y + 80);
+
+            // Unlock button
+            g.drawImage(unlockButtonImg, x + 350, y + 20, 180, 60, null);
+
+        } else {
             if (!upgraded) {
                 g.setColor(Color.CYAN);
-                g.drawString("Upgrade Available", x + 100, y + 60);
+                g.drawString("Upgrade Available", x + 130, y + 80);
 
-                g.setColor(Color.DARK_GRAY);
-                g.fillRect(x + 250, y + 20, 120, 40);
-                g.setColor(Color.WHITE);
-                g.drawString("Upgrade", x + 275, y + 48);
+                // Upgrade button
+                g.drawImage(upgradeButtonImg, x + 350, y + 20, 180, 60, null);
+
             } else {
                 g.setColor(Color.GREEN);
-                g.drawString("Upgraded!", x + 100, y + 60);
+                g.drawString("Upgraded!", x + 130, y + 80);
             }
+        }
+
+        // Draw temporary error message
+        if (System.currentTimeMillis() < item.errorMessageUntil) {
+            g.setColor(Color.RED);
+            g.setFont(easyText.deriveFont(Font.BOLD, 22f));
+
+            String msg = "Not Enough Points";
+
+            // Center above the button
+            int msgX = x + 350 + (180 / 2) - (g.getFontMetrics().stringWidth(msg) / 2);
+            int msgY = y + 15; // slightly above the button
+
+            g.drawString(msg, msgX, msgY);
         }
     }
 
@@ -113,22 +183,27 @@ public class ShopPanel {
     }
 
     public void handleClick(int mx, int my, Player player) {
-    int y = 150 - scrollOffset;
+        int y = panelY + 180 - scrollOffset;
 
         for (ShopItem item : items) {
-            Rectangle unlockButton = new Rectangle(350, y + 20, 120, 40);
+
+            int itemX = panelX + 120;          
+            int buttonX = itemX + 350;         
+            int unlockY = y + 20;
+            int upgradeY = y + 20;
+
+            Rectangle unlockButton = new Rectangle(buttonX, unlockY, 180, 60);
+            Rectangle upgradeButton = new Rectangle(buttonX, upgradeY, 180, 60);
 
             if (unlockButton.contains(mx, my)) {
                 tryUnlock(item, player);
             }
 
-            Rectangle upgradeButton = new Rectangle(350, y + 70, 120, 40);
-
             if (upgradeButton.contains(mx, my)) {
                 tryUpgrade(item, player);
             }
 
-            y += 120;
+            y += 140;
         }
     }
 
@@ -139,7 +214,7 @@ public class ShopPanel {
             player.addPoints(-item.price);
             WeaponUnlockManager.unlock(item.weaponId);
         } else {
-            System.out.println("Not enough points");
+            item.errorMessageUntil = System.currentTimeMillis() + 5000;
         }
     }
 
@@ -152,9 +227,8 @@ public class ShopPanel {
         if (player.getPoints() >= cost) {
             player.addPoints(-cost);
             PersistenceManager.saveWeaponUpgraded(item.weaponId, true);
-            System.out.println(item.name + " permanently upgraded!");
         } else {
-            System.out.println("Not enough points");
+            item.errorMessageUntil = System.currentTimeMillis() + 5000; 
         }
     }
 }

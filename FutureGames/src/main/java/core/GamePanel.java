@@ -1,5 +1,6 @@
 package core;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.*;
@@ -38,6 +39,7 @@ public class GamePanel extends JPanel {
     public Rectangle continueButton;
     private Rectangle[] cardSelectionRects;
     private List<ModifierCard> currentCards;
+    private Image playButtonImg;
 
     // Pause menu UI
     private Rectangle resumeButton;
@@ -74,6 +76,7 @@ public class GamePanel extends JPanel {
     public Rectangle getShopButton() { return shopButton; }
     public Rectangle getQuitButton() { return quitButton; }
     public Rectangle getContinueButton() { return continueButton; }
+    public Image getPlayButtonImg() { return playButtonImg; }
 
     public void setCardSelectionRects(Rectangle[] rects) { this.cardSelectionRects = rects; }
     public Rectangle[] getCardSelectionRects() { return cardSelectionRects; }
@@ -113,6 +116,12 @@ public class GamePanel extends JPanel {
         setDoubleBuffered(true);
         setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.BLACK);
+
+        try {
+            playButtonImg = ImageIO.read(getClass().getResource("/ui/Play Button.png"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // Initialize pause menu UI
         resumeButton = new Rectangle(0, 0, 0, 0);       // will be positioned in paintComponent
@@ -239,15 +248,15 @@ public class GamePanel extends JPanel {
 
                 // --- SHOP SCREEN INTERACTION ---
                 if (gameState == GameState.SHOP) {
-                    shopPanel.handleClick(mx, my, player);
 
-                    // Handle continue button
-                    if (continueButton.contains(mx, my)) {
+                    // First let the shop panel handle unlock/upgrade clicks
+                    getShopPanel().handleClick(mx, my, player);
+
+                    // Now handle the Play Button
+                    if (continueButton != null && continueButton.contains(mx, my)) {
                         gameState = GameState.PLAYING;
                         return;
                     }
-
-                    return;
                 }
 
                 // --- PAUSE MENU INTERACTION ---
@@ -402,7 +411,15 @@ public class GamePanel extends JPanel {
         }
 
         if (gameState == GameState.SHOP) {
-            continueButton = new Rectangle(getWidth() - 220, getHeight() - 80, 200, 50);
+            int w = 200;
+            int h = 80;
+
+            continueButton = new Rectangle(
+                getWidth() - w - 40,
+                getHeight() - h - 40,
+                w,
+                h
+            );
         }
     }
 

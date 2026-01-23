@@ -9,6 +9,8 @@ public class ShopItem {
     public final int upgradeCost;
     public Image icon;
 
+    public long errorMessageUntil = 0;
+
     public ShopItem(String weaponId, String name, int price, int upgradeCost) {
         this.weaponId = weaponId;
         this.name = name;

@@ -430,7 +430,23 @@ public class GameRenderer {
     private void drawShop(Graphics g) {
         panel.getShopPanel().draw(g, panel.getPlayer(), panel.getWidth(), panel.getHeight());
 
-        drawButton((Graphics2D) g, panel.getContinueButton(), "Continue");
+        drawPlayButton((Graphics2D) g);
+    }
+
+    private void drawPlayButton(Graphics2D g) {
+        Rectangle btn = panel.getContinueButton();
+        Image img = panel.getPlayButtonImg();
+
+        if (btn == null || img == null) return;
+
+        g.drawImage(
+            img,
+            btn.x,
+            btn.y,
+            btn.width,
+            btn.height,
+            null
+        );
     }
 
     // -------------------------
