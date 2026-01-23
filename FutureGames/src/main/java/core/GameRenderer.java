@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 import java.awt.image.BufferedImage;
@@ -27,6 +28,10 @@ public class GameRenderer {
     private Image pauseBorder;
     private Image pauseResume;
     private Image pauseQuit;
+    private Image retryButtonImg;
+    private Image shopButtonImg;
+    private Image quitButtonImg;
+    private Image borderPanelImg;
 
     private Font easyText;
 
@@ -39,6 +44,11 @@ public class GameRenderer {
         pauseBorder = new ImageIcon(getClass().getResource("/ui/Border Template.png")).getImage();
         pauseResume = new ImageIcon(getClass().getResource("/ui/Play Button.png")).getImage();
         pauseQuit   = new ImageIcon(getClass().getResource("/ui/Quit Button.png")).getImage();
+        retryButtonImg = new ImageIcon(getClass().getResource("/ui/Retry Button.png")).getImage();
+        shopButtonImg  = new ImageIcon(getClass().getResource("/ui/Shop Button.png")).getImage();
+        quitButtonImg  = new ImageIcon(getClass().getResource("/ui/Quit Button.png")).getImage();
+        borderPanelImg = new ImageIcon(getClass().getResource("/ui/Border Template.png")).getImage();
+
 
         pauseResume = scale(pauseResume, 128, 128);
         pauseQuit   = scale(pauseQuit,   128, 128);
@@ -400,28 +410,62 @@ public class GameRenderer {
     // GAME OVER SCREEN
     // -------------------------
     private void drawGameOver(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
         Player player = panel.getPlayer();
 
-        int cx = panel.getWidth() / 2;
-        int cy = panel.getHeight() / 2;
+        // Panel size (adjust if needed)
+        int panelW = 900;
+        int panelH = 700;
 
-        panel.retryButton = new Rectangle(cx - 100, cy + 20, 200, 50);
-        panel.shopButton  = new Rectangle(cx - 100, cy + 90, 200, 50);
-        panel.quitButton  = new Rectangle(cx - 100, cy + 160, 200, 50);
+        // Center panel on screen
+        int x = (panel.getWidth() - panelW) / 2;
+        int y = (panel.getHeight() - panelH) / 2;
 
-        g.setColor(Color.YELLOW);
-        g.setFont(easyText.deriveFont(Font.BOLD, 20f));
-        g.drawString("Final Score: " + player.getPoints(),
-                panel.getWidth() / 2 - 100, panel.getHeight() / 2);
+        // Draw panel background
+        g2.drawImage(borderPanelImg, x, y, panelW, panelH, null);
 
-        g.setColor(Color.WHITE);
-        g.setFont(easyText.deriveFont(Font.BOLD, 48f));
-        g.drawString("Game Over",
-                panel.getWidth() / 2 - 150, panel.getHeight() / 2 - 80);
+        // -------------------------
+        // GAME OVER TITLE (centered)
+        // -------------------------
+        String title = "Game Over";
+        g2.setFont(easyText.deriveFont(Font.BOLD, 64f));
+        g2.setColor(Color.WHITE);
 
-        drawButton((Graphics2D) g, panel.getRetryButton(), "Retry");
-        drawButton((Graphics2D) g, panel.getShopButton(), "Shop");
-        drawButton((Graphics2D) g, panel.getQuitButton(), "Quit");
+        FontMetrics fmTitle = g2.getFontMetrics();
+        int titleX = x + (panelW - fmTitle.stringWidth(title)) / 2;
+        int titleY = y + 120;
+
+        g2.drawString(title, titleX, titleY);
+
+        // -------------------------
+        // FINAL SCORE (centered)
+        // -------------------------
+        String scoreText = "Final Score: " + player.getPoints();
+        g2.setFont(easyText.deriveFont(Font.BOLD, 32f));
+        g2.setColor(Color.YELLOW);
+
+        FontMetrics fmScore = g2.getFontMetrics();
+        int scoreX = x + (panelW - fmScore.stringWidth(scoreText)) / 2;
+        int scoreY = y + 200;
+
+        g2.drawString(scoreText, scoreX, scoreY);
+
+        // -------------------------
+        // BUTTONS (centered inside panel)
+        // -------------------------
+        int btnW = 350;
+        int btnH = 150;
+        int btnX = x + (panelW - btnW) / 2;
+
+        // Update rectangles for click detection
+        panel.retryButton = new Rectangle(btnX, y + 280, btnW, btnH);
+        panel.shopButton  = new Rectangle(btnX, y + 400, btnW, btnH);
+        panel.quitButton  = new Rectangle(btnX, y + 520, btnW, btnH);
+
+        // Draw PNG buttons
+        g2.drawImage(retryButtonImg, panel.retryButton.x, panel.retryButton.y, btnW, btnH, null);
+        g2.drawImage(shopButtonImg,  panel.shopButton.x,  panel.shopButton.y,  btnW, btnH, null);
+        g2.drawImage(quitButtonImg,  panel.quitButton.x,  panel.quitButton.y,  btnW, btnH, null);
     }
 
     // -------------------------
