@@ -32,7 +32,7 @@ public class StartScreen extends JPanel {
         int screenW = 1200;
         int screenH = 800;
 
-        // Scale factor for your 64x64 buttons
+        // Scale factor for 64x64 buttons
         int scale = 2;
 
         // Load UI images

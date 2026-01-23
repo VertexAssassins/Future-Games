@@ -13,8 +13,10 @@ import utils.Constants;
 import utils.PlayerAnimationSet;
 import weapons.WeaponType;
 import utils.Animation;
+import core.GameWorld;
 
 public class Player {
+    private GameWorld world;
     private double x = 300, y = 200;
     private final int size = 80;
     public double maxHealth;
@@ -94,6 +96,8 @@ public class Player {
         this.x = x;
         this.y = y;
     }
+
+    public void setWorld(GameWorld world) { this.world = world; }
 
     public void startDash() {
         // Must have a charge
@@ -217,6 +221,7 @@ public class Player {
     public double getHealth() { return health; }
     public int getPoints() { return points; }
     public void resetPoints() { points = 0; }
+    public GameWorld getWorld() { return world; }
 
     private void loadDashChargeFrames() {
         try {
@@ -266,8 +271,22 @@ public class Player {
                 dashVX = 0;
                 dashVY = 0;
             } else {
-                x += dashVX;
-                y += dashVY;
+                double nextX = x + dashVX;
+                double nextY = y + dashVY;
+
+                double pr = getColliderRadius();
+                
+                if (!world.collidesCircle(nextX, nextY, pr)) {
+                    x = nextX;
+                    y = nextY;
+                } else {
+                    // Stop dash immediately on collision
+                    isDashing = false;
+                    dashVX = 0;
+                    dashVY = 0;
+                    return;
+                }
+
                 dashVX *= dashDecay;
                 dashVY *= dashDecay;
                 return;
@@ -335,13 +354,29 @@ public class Player {
             double normX = dx / length;
             double normY = dy / length;
 
-            x += normX * speed;
-            y += normY * speed;
+            double nextX = x + normX * speed;
+            double nextY = y + normY * speed;
+
+            double pr = getColliderRadius();
+            if (!world.collidesCircle(nextX, nextY, pr)) {
+                x = nextX;
+                y = nextY;
+            }
         }
 
         // Apply knockback velocity
-        x += knockbackVX;
-        y += knockbackVY;
+        double nextX = x + knockbackVX;
+        double nextY = y + knockbackVY;
+
+        double pr = getColliderRadius();
+
+        if (!world.collidesCircle(nextX, nextY, pr)) {
+            x = nextX;
+            y = nextY;
+        } else {
+            knockbackVX = 0;
+            knockbackVY = 0;
+        }
 
         // Decay knockback velocity
         knockbackVX *= knockbackDecay;
@@ -525,7 +560,7 @@ public class Player {
     }
 
     public double getColliderRadius() {
-        return size * 0.3; // or 0.55 if you want a slight buffer
+        return size * 0.15; // or 0.55 if you want a slight buffer
     }
 
     public void reset() {

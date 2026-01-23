@@ -1,9 +1,10 @@
 package entities;
 
 import java.awt.*;
+import core.GameWorld;
 
 public class FlamingSkull extends Enemy {
-    public FlamingSkull(double worldX, double worldY) {
+    public FlamingSkull(double worldX, double worldY, GameWorld world) {
         super(
             worldX, worldY,
             5,      // desiredSpacing (none)
@@ -11,7 +12,8 @@ public class FlamingSkull extends Enemy {
             0.0,    // noiseStrength (perfect straight line)
             10,     // orbitRadius (must be touching to orbit)
             0.0,    // orbitStrength (never orbit)
-            4.0     // chaseStrength (hyper-aggressive)
+            4.0,    // chaseStrength (hyper-aggressive)
+            world
         );
 
         loadRandomSprite("/enemies/flamingSkull/", "008");

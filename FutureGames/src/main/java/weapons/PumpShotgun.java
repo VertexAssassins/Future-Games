@@ -2,11 +2,12 @@ package weapons;
 import entities.Projectile;
 import utils.Sound;
 import entities.Player;
+import core.GameWorld;
 
 public class PumpShotgun extends Weapon {
 
-    public PumpShotgun(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(8, 30, 400, 10, 1, 2, 2500, "pumpshotgun"), spawner, player);
+    public PumpShotgun(ProjectileSpawner spawner, Player player, GameWorld world) {
+        super(new WeaponStats(8, 30, 400, 10, 1, 2, 2500, "pumpshotgun"), spawner, player, world);
 
         setFireSound(new Sound("/player/shotgun/shotgunShoot.wav"));
         setReloadSound(new Sound("/player/shotgun/shotgunReload.wav"));
@@ -21,7 +22,7 @@ public class PumpShotgun extends Weapon {
         int pellets = 6;
         for (int i = 0; i < pellets; i++) {
             double pelletAngle = angle + Math.toRadians((Math.random() - 0.5) * stats.spread);
-            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
+            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player, world);
             spawner.spawn(p);
         }
     }

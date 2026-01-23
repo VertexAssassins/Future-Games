@@ -1,9 +1,10 @@
 package entities;
 
 import java.awt.*;
+import core.GameWorld;
 
 public class Rat extends Enemy {
-    public Rat(double worldX, double worldY) {
+    public Rat(double worldX, double worldY, GameWorld world) {
         super(
             worldX, worldY,
             5,       // desiredSpacing (extremely tight)
@@ -11,7 +12,8 @@ public class Rat extends Enemy {
             0.02,    // noiseStrength (smooth movement)
             20,      // orbitRadius (must be touching to orbit)
             0.0,     // orbitStrength (no orbiting)
-            0.6      // chaseStrength (pack movement)
+            0.6,     // chaseStrength (pack movement)
+            world
         );
 
         loadRandomSprite("/enemies/rat/", "001");

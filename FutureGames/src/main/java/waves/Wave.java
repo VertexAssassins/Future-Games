@@ -5,6 +5,8 @@ import entities.Player;
 import utils.Constants;
 import java.util.List;
 
+import core.GameWorld;
+
 public class Wave {
     public static class SpawnRequest {
     private final Class<? extends Enemy> type;
@@ -47,14 +49,14 @@ public class Wave {
         return totalSpawned < expectedSpawnCount && totalSpawned < totalToSpawn;
     }
 
-    public Enemy spawnNext(Player player) {
+    public Enemy spawnNext(Player player, GameWorld world) {
         for (SpawnRequest request : spawnRequests) {
             if (request.getCount() > 0) {
                 try {
                     double[] coords = getRandomSpawnCoordinates(player);
                     Enemy enemy = request.getType()
-                        .getConstructor(double.class, double.class)
-                        .newInstance(coords[0], coords[1]);
+                        .getConstructor(double.class, double.class, GameWorld.class)
+                        .newInstance(coords[0], coords[1], world);
                     request.decrementCount();
                     totalSpawned++;
                     return enemy;

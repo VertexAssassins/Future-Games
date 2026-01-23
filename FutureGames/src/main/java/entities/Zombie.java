@@ -1,9 +1,10 @@
 package entities;
 
 import java.awt.*;
+import core.GameWorld;
 
 public class Zombie extends Enemy {
-    public Zombie(double worldX, double worldY) {
+    public Zombie(double worldX, double worldY, GameWorld world) {
         super(
             worldX, worldY,
             60,     // desiredSpacing (wide spread)
@@ -11,7 +12,8 @@ public class Zombie extends Enemy {
             0.05,   // noiseStrength (slow, steady shambling)
             200,    // orbitRadius (begin circling early)
             0.6,    // orbitStrength (approach from all angles)
-            0.5     // chaseStrength (slow, inevitable)
+            0.5,    // chaseStrength (slow, inevitable)
+            world
         );
 
         loadRandomSprite("/enemies/zombie/", "020");

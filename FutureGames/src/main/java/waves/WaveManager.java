@@ -12,6 +12,7 @@ import entities.FlamingSkull;
 import entities.Zombie;
 import entities.Rat;
 import entities.Rabid;
+import core.GameWorld;
 
 public class WaveManager {
     private final List<Enemy> enemies;
@@ -20,14 +21,16 @@ public class WaveManager {
     private Wave currentWave;
     private int currentWaveNumber = 0;
     private boolean justReset = false;
+    private final GameWorld world;
 
     public int getWaveNumber() {
         return currentWaveNumber;
     }
 
-    public WaveManager(List<Enemy> enemies, Player player) {
+    public WaveManager(List<Enemy> enemies, Player player, GameWorld world) {
         this.enemies = enemies;
         this.player = player;
+        this.world = world;
 
         // Zombie enemy: increases by 4 * (1.25 ^ waveNum)
         blueprint.addRule(blueprint.new ConditionalSpawnRule(Zombie.class, waveNum -> (int)(4 * Math.pow(1.25, waveNum))));
@@ -108,7 +111,7 @@ public class WaveManager {
 
     public void update() {
         if (currentWave != null && currentWave.shouldSpawn()) {
-            Enemy enemy = currentWave.spawnNext(player);
+            Enemy enemy = currentWave.spawnNext(player,world);
             if (enemy != null) {
                 enemies.add(enemy);
             }

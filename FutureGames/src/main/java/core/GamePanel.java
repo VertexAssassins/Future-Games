@@ -26,7 +26,8 @@ public class GamePanel extends JPanel {
     private final Player player = new Player();
     private final CameraManager camera = new CameraManager(player);
     private final List<Enemy> enemies = new ArrayList<>();
-    private final WaveManager waveManager = new WaveManager(enemies, player);
+    private final GameWorld world = new GameWorld(2400, 2400);
+    private final WaveManager waveManager = new WaveManager(enemies, player, world);
     private final List<Projectile> projectiles = new ArrayList<>();
     private final GameRenderer renderer = new GameRenderer(this);
     private final MusicManager musicManager = new MusicManager();
@@ -54,6 +55,7 @@ public class GamePanel extends JPanel {
 
     private boolean debugEnabled = false;
 
+    public GameWorld getWorld() { return world; }
     public boolean isDebugEnabled() { return debugEnabled; }
     public boolean isMouseDown() { return mouseDown; }
     public Point getMousePos() { return mousePos; }
@@ -101,13 +103,13 @@ public class GamePanel extends JPanel {
 
     private final WeaponManager weaponManager = new WeaponManager(
         Map.of(
-            WeaponType.PISTOL, new Pistol(this::spawnProjectile, player),
-            WeaponType.REVOLVER, new Revolver(this::spawnProjectile, player),
-            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile, player),
-            WeaponType.SMG, new SMG(this::spawnProjectile, player),
-            WeaponType.ASSAULTRIFLE, new AssaultRifle(this::spawnProjectile, player),
-            WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile, player),
-            WeaponType.LMG, new LMG(this::spawnProjectile, player)
+            WeaponType.PISTOL, new Pistol(this::spawnProjectile, player, world),
+            WeaponType.REVOLVER, new Revolver(this::spawnProjectile, player, world),
+            WeaponType.SHOTGUN, new PumpShotgun(this::spawnProjectile, player, world),
+            WeaponType.SMG, new SMG(this::spawnProjectile, player, world),
+            WeaponType.ASSAULTRIFLE, new AssaultRifle(this::spawnProjectile, player, world),
+            WeaponType.AUTOSHOTGUN, new AutoShotgun(this::spawnProjectile, player, world),
+            WeaponType.LMG, new LMG(this::spawnProjectile, player, world)
         ),
         WeaponType.PISTOL
     );
@@ -122,6 +124,9 @@ public class GamePanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Initialize game world
+        player.setWorld(world);
 
         // Initialize pause menu UI
         resumeButton = new Rectangle(0, 0, 0, 0);       // will be positioned in paintComponent
@@ -205,6 +210,7 @@ public class GamePanel extends JPanel {
                 }
             }
         });
+
         new GameLoop(this, player, enemies, waveManager, musicManager).start();
 
             // Handle shooting
@@ -390,7 +396,7 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        updateUIRectangles();   // <-- ADD THIS
+        updateUIRectangles();
 
         renderer.render(g);
     }

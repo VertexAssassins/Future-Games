@@ -12,6 +12,7 @@ weapons\WeaponType.class
 core\GamePanel$2.class
 input\KeyBindings$WeaponSwitcher.class
 utils\Sound.class
+core\WorldObject.class
 weapons\PumpShotgun.class
 weapons\WeaponFactory.class
 entities\HealthPickup.class
@@ -33,6 +34,7 @@ gameModificationCards\ModifierType.class
 weapons\LMG.class
 gameModificationCards\RarityValues$1.class
 input\KeyBindings$1.class
+core\StaticObject.class
 entities\Zombie.class
 waves\Wave.class
 weapons\SMG.class
@@ -64,7 +66,9 @@ gameModificationCards\ModifierLibrary$1.class
 weapons\Pistol.class
 waves\WaveBlueprint$ConditionalSpawnRule.class
 core\GameState.class
+core\GameWorld.class
 utils\MusicManager.class
+core\AnimatedObject.class
 weapons\AssaultRifle.class
 entities\Rabid.class
 input\KeyBindings$4.class

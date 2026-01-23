@@ -3,11 +3,13 @@ package weapons;
 import core.PersistenceManager;
 import entities.Player;
 import utils.Sound;
+import core.GameWorld;
 
 public abstract class Weapon {
     protected final ProjectileSpawner spawner;
     protected final WeaponStats stats;
     protected final Player player;
+    protected GameWorld world;
     protected int ammo;
     protected long lastShotTime;
     protected boolean reloading = false;
@@ -15,10 +17,11 @@ public abstract class Weapon {
     protected Sound fireSound;
     protected Sound reloadSound;
 
-    public Weapon(WeaponStats stats, ProjectileSpawner spawner, Player player) {
+    public Weapon(WeaponStats stats, ProjectileSpawner spawner, Player player, GameWorld world) {
         this.stats = stats;
         this.spawner = spawner;
         this.player = player;
+        this.world = world;
         this.ammo = stats.maxAmmo;
     }
 

@@ -2,10 +2,11 @@ package weapons;
 import entities.Projectile;
 import utils.Sound;
 import entities.Player;
+import core.GameWorld;
 
 public class LMG extends Weapon {
-    public LMG(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(20, 25, 800, 40, 25, 100, 5000, "lmg"), spawner, player);
+    public LMG(ProjectileSpawner spawner, Player player, GameWorld world) {
+        super(new WeaponStats(20, 25, 800, 40, 25, 100, 5000, "lmg"), spawner, player, world);
 
         setFireSound(new Sound("/player/lmg/lmgShoot.wav"));
         setReloadSound(new Sound("/player/lmg/lmgReload.wav"));
@@ -20,7 +21,7 @@ public class LMG extends Weapon {
         int pellets = 1;
         for (int i = 0; i < pellets; i++) {
             double pelletAngle = angle + Math.toRadians((Math.random() - 0.5) * stats.spread);
-            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
+            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player, world);
             spawner.spawn(p);
         }
     }

@@ -1,9 +1,10 @@
 package entities;
 
 import java.awt.*;
+import core.GameWorld;
 
 public class Rabid extends Enemy {
-    public Rabid(double worldX, double worldY) {
+    public Rabid(double worldX, double worldY, GameWorld world) {
         super(
             worldX, worldY,
             80,     // desiredSpacing (wide formation)
@@ -11,7 +12,8 @@ public class Rabid extends Enemy {
             0.15,   // noiseStrength (slight unpredictability)
             260,    // orbitRadius (start circling early)
             2.0,    // orbitStrength (aggressive flanking)
-            0.7     // chaseStrength (less direct, more tactical)
+            0.7,    // chaseStrength (less direct, more tactical)
+            world
         );
 
         loadRandomSprite("/enemies/rabid/", "009");

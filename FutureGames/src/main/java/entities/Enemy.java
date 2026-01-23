@@ -2,19 +2,18 @@ package entities;
 
 import java.awt.*;
 import java.util.List;
-
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 import utils.Constants;
 import utils.Sound;
-
-import java.awt.image.BufferedImage;
-
 import core.CameraManager;
 import core.WorldManager;
+import core.GameWorld;
 
 public class Enemy {
     protected double worldX, worldY;
+    protected GameWorld world;
     protected BufferedImage sprite;    
 
     private double desiredSpacing;  // how far enemies try to stay apart
@@ -77,7 +76,13 @@ public class Enemy {
                 double noiseStrength,
                 double orbitRadius,
                 double orbitStrength,
-                double chaseStrength) {
+                double chaseStrength,
+                GameWorld world) {
+
+        if (world == null) {
+            System.out.println("NULL WORLD ENEMY: " + getClass().getSimpleName());
+            Thread.dumpStack();
+        }
 
         this.worldX = worldX;
         this.worldY = worldY;
@@ -88,6 +93,8 @@ public class Enemy {
         this.orbitRadius = orbitRadius;
         this.orbitStrength = orbitStrength;
         this.chaseStrength = chaseStrength;
+
+        this.world = world;
     }
 
     public void setSprite(BufferedImage sprite) {
@@ -214,23 +221,37 @@ public class Enemy {
         // -----------------------------
         // 6. Apply movement
         // -----------------------------
-        worldX = WorldManager.wrapX(worldX + finalX * speed);
-        worldY = WorldManager.wrapY(worldY + finalY * speed);
+        double nextX = WorldManager.wrapX(worldX + finalX * speed);
+        double nextY = WorldManager.wrapY(worldY + finalY * speed);
+
+        double r = getColliderRadius();
+
+        if (!world.collidesCircle(nextX, nextY, r)) {
+            worldX = nextX;
+            worldY = nextY;
+        }
     }
 
 
     public void applyKnockbackMovement() {
-        worldX += knockbackVX;
-        worldY += knockbackVY;
+        double nextX = WorldManager.wrapX(worldX + knockbackVX);
+        double nextY = WorldManager.wrapY(worldY + knockbackVY);
+
+        double r = getColliderRadius();
+
+        if (!world.collidesCircle(nextX, nextY, r)) {
+            worldX = nextX;
+            worldY = nextY;
+        } else {
+            knockbackVX = 0;
+            knockbackVY = 0;
+        }
 
         knockbackVX *= knockbackDecay;
         knockbackVY *= knockbackDecay;
 
         if (Math.abs(knockbackVX) < 0.1) knockbackVX = 0;
         if (Math.abs(knockbackVY) < 0.1) knockbackVY = 0;
-
-        worldX = WorldManager.wrapX(worldX);
-        worldY = WorldManager.wrapY(worldY);
     }
 
     public void applyKnockback(double sourceX, double sourceY, double damage, double maxHealth) {

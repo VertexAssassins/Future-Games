@@ -2,10 +2,11 @@ package weapons;
 import entities.Projectile;
 import utils.Sound;
 import entities.Player;
+import core.GameWorld;
 
 public class AssaultRifle extends Weapon {
-    public AssaultRifle(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(10, 15, 800, 20, 7.5, 45, 3000, "assaultrifle"), spawner, player);
+    public AssaultRifle(ProjectileSpawner spawner, Player player, GameWorld world) {
+        super(new WeaponStats(10, 15, 800, 20, 7.5, 45, 3000, "assaultrifle"), spawner, player, world);
 
         setFireSound(new Sound("/player/assaultrifle/assaultrifleShoot.wav"));
         setReloadSound(new Sound("/player/assaultrifle/assaultrifleReload.wav"));
@@ -20,7 +21,7 @@ public class AssaultRifle extends Weapon {
         int pellets = 1;
         for (int i = 0; i < pellets; i++) {
             double pelletAngle = angle + Math.toRadians((Math.random() - 0.5) * stats.spread);
-            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
+            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player, world);
             spawner.spawn(p);
         }
     }

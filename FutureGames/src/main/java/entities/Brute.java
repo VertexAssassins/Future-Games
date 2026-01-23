@@ -1,9 +1,10 @@
 package entities;
 
 import java.awt.*;
+import core.GameWorld;
 
 public class Brute extends Enemy {
-    public Brute(double worldX, double worldY) {
+    public Brute(double worldX, double worldY, GameWorld world) {
         super(
             worldX, worldY,
             10,     // desiredSpacing (almost none)
@@ -11,7 +12,8 @@ public class Brute extends Enemy {
             0.0,    // noiseStrength (no randomness)
             20,     // orbitRadius (must be VERY close to orbit)
             0.0,    // orbitStrength (never orbit)
-            3.0     // chaseStrength (extremely aggressive)
+            3.0,     // chaseStrength (extremely aggressive)
+            world
         );
 
         loadRandomSprite("/enemies/brute/", "025");

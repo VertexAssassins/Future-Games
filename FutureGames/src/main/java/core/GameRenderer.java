@@ -3,10 +3,7 @@ package core;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-
 import java.awt.image.BufferedImage;
 
 import entities.Enemy;
@@ -85,6 +82,26 @@ public class GameRenderer {
     // GAMEPLAY RENDERING
     // -------------------------
     private void drawGameplay(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        //Draw tile background first
+        panel.getWorld().draw(
+            g2,
+            panel.getCamera().getOffsetX(),
+            panel.getCamera().getOffsetY(),
+            panel.getWidth(),
+            panel.getHeight()
+        );
+
+        // Draw static and other world objects
+        double camX = panel.getCamera().getOffsetX();
+        double camY = panel.getCamera().getOffsetY();
+        for (WorldObject obj : panel.getWorld().getObjects()) {
+            obj.draw(g2, camX, camY, panel.getWidth(), panel.getHeight(),
+                     panel.getWorld().getWidth(), panel.getWorld().getHeight());
+        }
+
+        // Draw gameplay elements on top
         drawPlayer(g);
         drawProjectiles(g);
         drawEnemies(g);
@@ -297,14 +314,6 @@ public class GameRenderer {
 
         g2.setColor(Color.WHITE);
         g2.drawString(sfxText, sfxTextX, sfxLabelY);
-    }
-
-    private void drawButton(Graphics2D g2, Rectangle r, String text) {
-        g2.setColor(Color.LIGHT_GRAY);
-        g2.fill(r);
-        g2.setColor(Color.BLACK);
-        g2.draw(r);
-        g2.drawString(text, r.x + 55, r.y + 32);
     }
 
     private Image scale(Image img, int w, int h) {

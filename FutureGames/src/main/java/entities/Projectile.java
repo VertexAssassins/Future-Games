@@ -2,15 +2,17 @@ package entities;
 
 import java.awt.*;
 import java.util.List;
-import utils.Quadtree;
-import utils.CollisionResolver;
-import utils.Constants;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
+import utils.Quadtree;
+import utils.CollisionResolver;
+import utils.Constants;
+import core.GameWorld;
 
 public class Projectile {
     private double x, y;
+    private final GameWorld world;
     private final double angle;
     private final double speed;
     private final double range;
@@ -21,7 +23,7 @@ public class Projectile {
     private final int size = 5;
     private BufferedImage sprite;
 
-    public Projectile(double x, double y, double angle, double speed, double range, double damage, Player owner) {
+    public Projectile(double x, double y, double angle, double speed, double range, double damage, Player owner, GameWorld world) {
         this.x = x;
         this.y = y;
         this.angle = angle;
@@ -29,6 +31,7 @@ public class Projectile {
         this.range = range;
         this.damage = damage;
         this.owner = owner;
+        this.world = world;
 
         try {
             sprite = ImageIO.read(
@@ -97,11 +100,17 @@ public class Projectile {
             double nextX = currX + stepDx;
             double nextY = currY + stepDy;
 
+            // 1) Enemy collision (already there)
             for (Enemy e : candidates) {
                 if (CollisionResolver.checkProjectileHit(this, e, currX, currY, nextX, nextY)) {
                     applyDamage(e, currX, currY);
-                    return false;
+                    return false; // bullet dies
                 }
+            }
+
+            // 2) Object collision (new)
+            if (world.collidesCircle(nextX, nextY, getRadius())) {
+                return false; // bullet hits object and stops
             }
 
             currX = nextX;

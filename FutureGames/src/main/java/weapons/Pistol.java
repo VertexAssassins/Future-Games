@@ -2,10 +2,11 @@ package weapons;
 import entities.Projectile;
 import utils.Sound;
 import entities.Player;
+import core.GameWorld;
 
 public class Pistol extends Weapon {
-    public Pistol(ProjectileSpawner spawner, Player player) {
-        super(new WeaponStats(10, 10, 400, 10, 1, 1, 2000, "pistol"), spawner, player);
+    public Pistol(ProjectileSpawner spawner, Player player, GameWorld world) {
+        super(new WeaponStats(10, 10, 400, 10, 1, 1, 2000, "pistol"), spawner, player, world);
 
         setFireSound(new Sound("/player/pistol/pistolShoot.wav"));
         setReloadSound(new Sound("/player/pistol/pistolReload.wav"));
@@ -20,7 +21,7 @@ public class Pistol extends Weapon {
         int pellets = 1;
         for (int i = 0; i < pellets; i++) {
             double pelletAngle = angle + Math.toRadians((Math.random() - 0.5) * stats.spread);
-            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player);
+            Projectile p = new Projectile(spawnX, spawnY, pelletAngle, stats.projectileSpeed, stats.range, stats.damage, player, world);
             spawner.spawn(p);
         }
     }
