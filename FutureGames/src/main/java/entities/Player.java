@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import core.PersistenceManager;
 import utils.Constants;
 import utils.PlayerAnimationSet;
+import utils.Sound;
 import weapons.WeaponType;
 import utils.Animation;
 import core.GameWorld;
@@ -21,6 +22,8 @@ public class Player {
     private final int size = 80;
     public double maxHealth;
     private int points;
+    private Sound[] hurtSounds;
+    private Sound dashSound;
 
     private float hitOverlayAlpha = 0f;
     private final float maxOverlayAlpha = 0.8f;
@@ -90,6 +93,13 @@ public class Player {
         loadDashChargeFrames();
         setWeaponAnimation(WeaponType.PISTOL);
         currentAnimation = currentSet.idle;
+
+        hurtSounds = new Sound[] {
+            new Sound("/player/grunts/grunts-1.wav"),
+            new Sound("/player/grunts/grunts-2.wav"),
+            new Sound("/player/grunts/grunts-3.wav")
+        };
+        dashSound = new Sound("/player/dash/dash.wav");
     }
 
     public void setPosition(double x, double y) {
@@ -122,6 +132,10 @@ public class Player {
 
         isDashing = true;
         dashStartTime = System.currentTimeMillis();
+        // Play sound
+        if (dashSound != null) {
+            dashSound.play();
+        }
 
         // Consume a charge
         dashCharges--;
@@ -187,14 +201,23 @@ public class Player {
     }
 
     public void takeDamage(double amount) {
-    long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
         if (now - lastHitTime >= damageCooldown) {
+
             health -= amount;
             hitOverlayAlpha = maxOverlayAlpha;
             if (health < 0) health = 0;
+
             lastHitTime = now;
-            color = Color.RED; // flash red on hit
+            color = Color.RED;
+
+            playRandomHurtSound();
         }
+    }
+
+    private void playRandomHurtSound() {
+        int index = (int)(Math.random() * hurtSounds.length);
+        hurtSounds[index].play();
     }
 
     public void heal(double amount) {
