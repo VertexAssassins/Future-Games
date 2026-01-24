@@ -2,7 +2,6 @@ package utils;
 
 import core.GameWorld;
 import entities.Player;
-import entities.Enemy;
 
 import java.awt.*;
 import java.util.ArrayDeque;

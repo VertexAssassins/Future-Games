@@ -6,10 +6,12 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
+import utils.BloodSplatter;
 import utils.Constants;
 import utils.Sound;
 import utils.FlowField;
 import core.CameraManager;
+import core.GamePanel;
 import core.WorldManager;
 import core.GameWorld;
 
@@ -25,9 +27,11 @@ public class Enemy {
     private double orbitStrength;   // how strongly they orbit
     private double chaseStrength;   // base chase force
 
+    private final double pathOffsetAngle = Math.random() * Math.PI * 2;
+    private final double pathOffsetStrength = 0.2 + Math.random() * 0.3;
+
     private double lastX, lastY;
     private int stuckFrames = 0;
-    private int laneIndex = 0;
 
     private double knockbackVX = 0;
     private double knockbackVY = 0;
@@ -65,6 +69,7 @@ public class Enemy {
     protected Color color = Color.MAGENTA;
     protected double colliderRadius = size * .75;
     protected boolean facingRight = true;
+    private boolean deathHandled = false;
 
     // Global modifiers
     public static double GLOBAL_SPEED_MULT = 1.0;
@@ -76,8 +81,8 @@ public class Enemy {
     public double getX() { return worldX; }
     public double getY() { return worldY; }
 
-    public int getLaneIndex() { return laneIndex; }
-    public void setLaneIndex(int laneIndex) { this.laneIndex = laneIndex; }
+    public boolean isDeathHandled() { return deathHandled; }
+    public void markDeathHandled() { deathHandled = true; }
 
     public Enemy(double worldX, double worldY,
                 double desiredSpacing,
@@ -157,9 +162,7 @@ public class Enemy {
 
     public void updateMovement(Player player, List<Enemy> nearby, FlowField flowField) {
 
-        // -----------------------------------------
         // 1. Direction to player (ground truth)
-        // -----------------------------------------
         double dx = wrappedDelta(player.getX(), worldX, Constants.MAP_WIDTH);
         double dy = wrappedDelta(player.getY(), worldY, Constants.MAP_HEIGHT);
 
@@ -170,9 +173,7 @@ public class Enemy {
         double toPlayerY = dy / distToPlayer;
 
 
-        // -----------------------------------------
         // 2. Base from flow field (global path)
-        // -----------------------------------------
         double baseX = flowField.sampleDirX(worldX, worldY);
         double baseY = flowField.sampleDirY(worldX, worldY);
 
@@ -186,30 +187,51 @@ public class Enemy {
             baseY /= baseLen;
         }
 
+        // 2a. enemy-specific path variation (small, stable)
+        double ox = Math.cos(pathOffsetAngle) * pathOffsetStrength; // e.g. 0.1–0.3
+        double oy = Math.sin(pathOffsetAngle) * pathOffsetStrength;
 
-        // -----------------------------------------
-        // 3. Separation (local crowding)
-        // -----------------------------------------
-        double sepX = 0, sepY = 0;
+        baseX += ox;
+        baseY += oy;
 
-        for (Enemy other : nearby) {
-            if (other == this) continue;
+        // 2b. speed-based flow weight (0.4–1.0)
+        double maxSpeed = speed;          // per enemy type
+        double speedFactor = Math.min(1.0, speed / maxSpeed);
+        double flowWeight = 0.2 + speedFactor * 0.5;
 
-            double ox = wrappedDelta(worldX, other.worldX, Constants.MAP_WIDTH);
-            double oy = wrappedDelta(worldY, other.worldY, Constants.MAP_HEIGHT);
-            double d = Math.sqrt(ox*ox + oy*oy);
+        // 2c. tiny jitter (just enough to break symmetry)
+        double jitter = 0.05 * speedFactor;
+        baseX += (Math.random() * 2 - 1) * jitter;
+        baseY += (Math.random() * 2 - 1) * jitter;
 
-            if (d > 0 && d < desiredSpacing) {
-                double push = (desiredSpacing - d) / desiredSpacing;
-                sepX += (ox / d) * push;
-                sepY += (oy / d) * push;
-            }
+        // re-normalize base direction
+        baseLen = Math.sqrt(baseX*baseX + baseY*baseY);
+        if (baseLen > 0.0001) {
+            baseX /= baseLen;
+            baseY /= baseLen;
+        } else {
+            baseX = toPlayerX;
+            baseY = toPlayerY;
         }
 
 
-        // -----------------------------------------
-        // 4. Optional orbit + noise (personality)
-        // -----------------------------------------
+        // 3. Separation (local crowding)
+        double sepX = 0, sepY = 0;
+        for (Enemy other : nearby) {
+            if (other == this) continue;
+
+            double rx = wrappedDelta(worldX, other.worldX, Constants.MAP_WIDTH);
+            double ry = wrappedDelta(worldY, other.worldY, Constants.MAP_HEIGHT);
+            double d = Math.sqrt(rx*rx + ry*ry);
+
+            if (d > 0 && d < desiredSpacing) {
+                double push = (desiredSpacing - d) / desiredSpacing;
+                sepX += (rx / d) * push;
+                sepY += (ry / d) * push;
+            }
+        }
+
+        // 4. Orbit + noise
         double orbitX = 0, orbitY = 0;
         if (distToPlayer < orbitRadius) {
             orbitX = -toPlayerY;
@@ -219,28 +241,23 @@ public class Enemy {
         double noiseX = (Math.random() * 2 - 1) * noiseStrength;
         double noiseY = (Math.random() * 2 - 1) * noiseStrength;
 
-
-        // -----------------------------------------
-        // 5. Combine steering (but still "toward")
-        // -----------------------------------------
+        // 5. Combine steering
         double vx =
-            baseX * 1.0 +          // strong global path
+            baseX * flowWeight +
             sepX  * separationStrength +
             orbitX * orbitStrength +
             noiseX;
 
         double vy =
-            baseY * 1.0 +
+            baseY * flowWeight +
             sepY  * separationStrength +
             orbitY * orbitStrength +
             noiseY;
 
-        // HARD CONSTRAINT: do not move away from player unless absolutely forced
+        // HARD CONSTRAINT: don't move away from player
         double dotToPlayer = vx * toPlayerX + vy * toPlayerY;
         if (dotToPlayer < 0) {
-            // project onto plane that still has non-negative component toward player
-            // simplest: blend back toward toPlayer
-            double blend = 0.7; // 0 = ignore, 1 = fully toPlayer
+            double blend = 0.7;
             vx = vx * (1.0 - blend) + toPlayerX * blend;
             vy = vy * (1.0 - blend) + toPlayerY * blend;
         }
@@ -250,7 +267,6 @@ public class Enemy {
             vx /= len;
             vy /= len;
         }
-
 
         // -----------------------------------------
         // 6. Local obstacle avoidance as steering
@@ -277,7 +293,7 @@ public class Enemy {
             boolean leftBlocked  = world.collidesCircle(leftX,  leftY,  radius);
             boolean rightBlocked = world.collidesCircle(rightX, rightY, radius);
 
-            double avoidStrength = 1.0;
+            double avoidStrength = 0.8;
 
             if (!leftBlocked && rightBlocked) {
                 vx += perpX * avoidStrength;
@@ -564,8 +580,9 @@ public class Enemy {
         return health > 0;
     }
 
-    public void onDeath(Player player) {
+    public void onDeath(Player player, GamePanel panel) {
         player.addPoints(points);
-        System.out.println("Enemy died at (" + worldX + ", " + worldY + ")");
+        BloodSplatter splatter = new BloodSplatter(worldX, worldY);
+        panel.getBloodEffects().add(splatter);
     }
 }

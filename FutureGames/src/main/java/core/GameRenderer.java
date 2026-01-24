@@ -12,6 +12,7 @@ import entities.Player;
 import entities.Projectile;
 import gameModificationCards.ModifierCard;
 import gameModificationCards.ModifierType;
+import utils.BloodSplatter;
 import waves.WaveManager;
 import weapons.WeaponManager;
 
@@ -126,14 +127,21 @@ public class GameRenderer {
     }
 
     private void drawEnemies(Graphics g) {
-        List<Enemy> snapshot;
+        Graphics2D g2 = (Graphics2D) g;
 
+        // 1. Draw blood splatters first (on the ground)
+        for (BloodSplatter b : panel.getBloodEffects()) {
+            b.render(g2, panel.getCamera());
+        }
+
+        // 2. Draw enemies on top
+        List<Enemy> snapshot;
         synchronized (panel.getEnemies()) {
             snapshot = new ArrayList<>(panel.getEnemies());
         }
 
         for (Enemy e : snapshot) {
-            e.draw(g, panel.getCamera());
+            e.draw(g2, panel.getCamera());
         }
     }
 

@@ -162,8 +162,13 @@ public class Projectile {
     private void applyDamage(Enemy e, double hitX, double hitY) {
         double finalDamage = damage * owner.damageMultiplier;
 
+        boolean wasAlive = e.isAlive();
         e.takeDamage(finalDamage);
-        e.applyKnockback(hitX, hitY, finalDamage, e.getHealth() + finalDamage);
+
+        // Only apply knockback if the enemy survived
+        if (wasAlive && e.isAlive()) {
+            e.applyKnockback(hitX, hitY, finalDamage, e.getHealth() + finalDamage);
+        }
     }
 
     public void draw(Graphics g, double cameraX, double cameraY) {

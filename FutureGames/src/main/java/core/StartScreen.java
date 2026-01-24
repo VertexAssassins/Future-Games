@@ -118,6 +118,7 @@ public class StartScreen extends JPanel {
         resetButton.addActionListener(e -> {
             PersistenceManager.save("points", 0);
             WeaponUnlockManager.resetAll();
+            PersistenceManager.resetAllWeaponUpgrades();
             JOptionPane.showMessageDialog(this, "Progress reset!");
             frame.revalidate();
             frame.repaint();

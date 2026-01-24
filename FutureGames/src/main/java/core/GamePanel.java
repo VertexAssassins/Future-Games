@@ -12,6 +12,7 @@ import entities.Player;
 import entities.Projectile;
 import gameModificationCards.*;
 import input.KeyBindings;
+import utils.BloodSplatter;
 import utils.MusicManager;
 import utils.Sound;
 import waves.WaveManager;
@@ -32,6 +33,7 @@ public class GamePanel extends JPanel {
     private final GameRenderer renderer = new GameRenderer(this);
     private final MusicManager musicManager = new MusicManager();
     private final List<HealthPickup> healthPickups = new ArrayList<>();
+    private final List<BloodSplatter> bloodEffects = new ArrayList<>();
     
     private GameState gameState = GameState.PLAYING;
     public Rectangle retryButton = new Rectangle( getWidth() / 2 - 200, getHeight() / 2, 400, 100 );
@@ -66,6 +68,7 @@ public class GamePanel extends JPanel {
     public List<Enemy> getEnemies() { return enemies; }
     public WaveManager getWaveManager() { return waveManager; }
     public List<HealthPickup> getHealthPickups() { return healthPickups; }
+    public List<BloodSplatter> getBloodEffects() { return bloodEffects; }
 
 
     public Rectangle getResumeButton() { return resumeButton; }
@@ -475,6 +478,7 @@ public class GamePanel extends JPanel {
         weaponManager.applyPermanentUpgrades();
 
         weaponManager.switchTo(WeaponType.PISTOL);
+        player.setWeaponAnimation(WeaponType.PISTOL);
 
         // -------------------------
         // RESET WAVES

@@ -187,20 +187,26 @@ public class ShopPanel {
 
         for (ShopItem item : items) {
 
-            int itemX = panelX + 120;          
-            int buttonX = itemX + 350;         
+            int itemX = panelX + 120;
+            int buttonX = itemX + 350;
+
             int unlockY = y + 20;
             int upgradeY = y + 20;
 
             Rectangle unlockButton = new Rectangle(buttonX, unlockY, 180, 60);
             Rectangle upgradeButton = new Rectangle(buttonX, upgradeY, 180, 60);
 
-            if (unlockButton.contains(mx, my)) {
-                tryUnlock(item, player);
-            }
+            boolean unlocked = WeaponUnlockManager.isUnlocked(item.weaponId);
+            boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
 
-            if (upgradeButton.contains(mx, my)) {
-                tryUpgrade(item, player);
+            if (!unlocked) {
+                if (unlockButton.contains(mx, my)) {
+                    tryUnlock(item, player);
+                }
+            } else if (!upgraded) {
+                if (upgradeButton.contains(mx, my)) {
+                    tryUpgrade(item, player);
+                }
             }
 
             y += 140;
