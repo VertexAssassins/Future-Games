@@ -24,7 +24,6 @@ core\GamePanel.class
 entities\Brute.class
 core\EnemySpawnRule.class
 input\KeyBindings$5.class
-utils\FlowField.class
 input\KeyBindings.class
 input\KeyBindings$2.class
 utils\Animation.class
@@ -37,6 +36,7 @@ gameModificationCards\ModifierType.class
 weapons\LMG.class
 gameModificationCards\RarityValues$1.class
 input\KeyBindings$1.class
+utils\Vector2.class
 core\StaticObject.class
 entities\Zombie.class
 waves\Wave.class

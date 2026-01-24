@@ -94,10 +94,22 @@ public class GameWorld {
 
     public boolean collidesCircle(double px, double py, double pr) {
         for (WorldObject obj : objects) {
-            double dx = px - obj.x;
-            double dy = py - obj.y;
-            double distSq = dx*dx + dy*dy;
 
+            double ox = obj.x;
+            double oy = obj.y - (obj.height * 0.5); // adjust for centerY
+
+            double dx = px - ox;
+            double dy = py - oy;
+
+            // WRAP horizontally
+            if (dx >  worldWidth / 2) dx -= worldWidth;
+            if (dx < -worldWidth / 2) dx += worldWidth;
+
+            // WRAP vertically
+            if (dy >  worldHeight / 2) dy -= worldHeight;
+            if (dy < -worldHeight / 2) dy += worldHeight;
+
+            double distSq = dx*dx + dy*dy;
             double combined = pr + obj.collisionRadius;
 
             if (distSq < combined * combined) {
@@ -137,7 +149,10 @@ public class GameWorld {
 
                 } while (objRect.intersects(playerStart));
 
-                objects.add(new StaticObject(x, y, img));
+                double centerX = x + w / 2.0;
+                double centerY = y + h / 2.0;
+
+                objects.add(new StaticObject(centerX, centerY, img));
             }
         }
     }

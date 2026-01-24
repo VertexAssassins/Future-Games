@@ -12,15 +12,10 @@ import utils.Quadtree;
 import waves.WaveManager;
 import entities.Enemy;
 import entities.HealthPickup;
-import utils.FlowField;
 
 public class GameLoop extends Thread {
     private static final int TARGET_FPS = 60;
     private static final long FRAME_TIME = 1000 / TARGET_FPS;
-
-    private final FlowField flowField = new FlowField();
-    private long lastFlowUpdate = 0;
-    private static final long FLOW_UPDATE_INTERVAL = 200; // ms
 
     private final GamePanel panel;
     private final Player player;
@@ -89,11 +84,6 @@ public class GameLoop extends Thread {
     }
 
     private void updateGameLogic() {
-        long nowMs = System.currentTimeMillis();
-        if (nowMs - lastFlowUpdate > FLOW_UPDATE_INTERVAL) {
-            flowField.rebuild(panel.getWorld(), player, player.getX(), player.getY());
-            lastFlowUpdate = nowMs;
-        }
 
         player.update();
         waveManager.update();
@@ -109,7 +99,7 @@ public class GameLoop extends Thread {
 
         Quadtree quadtree = buildQuadtree();
 
-        updateEnemyMovement(quadtree);
+        updateEnemyMovement(panel.getWorld(), quadtree);
         applyKnockbackMovement();
 
         updateWeaponsAndShooting();
@@ -125,11 +115,9 @@ public class GameLoop extends Thread {
         maybeAdvanceWave();
     }
 
-    private void updateEnemyMovement(Quadtree quadtree) {
+    private void updateEnemyMovement(GameWorld world, Quadtree quadtree) {
         for (Enemy enemy : enemies) {
-            List<Enemy> nearby = quadtree.query(enemy.getBounds());
-            FlowField laneField = flowField;
-            enemy.updateMovement(player, nearby, laneField);
+            enemy.updateMovement(player, world, quadtree.query(enemy.getBounds()));
         }
     }
 
