@@ -120,9 +120,9 @@ public class GameWorld {
 
             int spawnCount;
 
-            if (maxDim > 96) spawnCount = 3;
-            else if (maxDim > 64) spawnCount = 7;
-            else spawnCount = 20;
+            if (maxDim > 96) spawnCount = 1;
+            else if (maxDim > 64) spawnCount = 4;
+            else spawnCount = 15;
 
             for (int i = 0; i < spawnCount; i++) {
 

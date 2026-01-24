@@ -33,7 +33,7 @@ public class WaveManager {
         this.world = world;
 
         // Zombie enemy: increases by 4 * (1.25 ^ waveNum)
-        blueprint.addRule(blueprint.new ConditionalSpawnRule(Zombie.class, waveNum -> (int)(4 * Math.pow(1.25, waveNum))));
+        blueprint.addRule(blueprint.new ConditionalSpawnRule(Zombie.class, waveNum -> (int)(4000 * Math.pow(1.25, waveNum))));
         // Brute enemy: 35.5% chance to spawn. sqrt(waveNum) + 1
         blueprint.addRule(
             blueprint.new ConditionalSpawnRule(

@@ -11,10 +11,17 @@ import utils.Quadtree;
 import waves.WaveManager;
 import entities.Enemy;
 import entities.HealthPickup;
+import utils.FlowField;
+import utils.MultiFlowField;
 
 public class GameLoop extends Thread {
     private static final int TARGET_FPS = 60;
     private static final long FRAME_TIME = 1000 / TARGET_FPS;
+
+    private final FlowField flowField = new FlowField();
+    private final MultiFlowField multiFlowField = new MultiFlowField();
+    private long lastFlowUpdate = 0;
+    private static final long FLOW_UPDATE_INTERVAL = 200; // ms
 
     private final GamePanel panel;
     private final Player player;
@@ -83,6 +90,12 @@ public class GameLoop extends Thread {
     }
 
     private void updateGameLogic() {
+        long nowMs = System.currentTimeMillis();
+        if (nowMs - lastFlowUpdate > FLOW_UPDATE_INTERVAL) {
+            multiFlowField.rebuildAll(panel.getWorld(), player, enemies.size());
+            lastFlowUpdate = nowMs;
+        }
+
         player.update();
         waveManager.update();
 
@@ -92,6 +105,7 @@ public class GameLoop extends Thread {
 
         Quadtree quadtree = buildQuadtree();
 
+        assignEnemyLanes();
         updateEnemyMovement(quadtree);
         applyKnockbackMovement();
 
@@ -110,10 +124,21 @@ public class GameLoop extends Thread {
 
     private void updateEnemyMovement(Quadtree quadtree) {
         for (Enemy enemy : enemies) {
-            // Query nearby enemies using the quadtree
             List<Enemy> nearby = quadtree.query(enemy.getBounds());
+            FlowField laneField = multiFlowField.getLane(enemy.getLaneIndex());
+            enemy.updateMovement(player, nearby, laneField);
+        }
+    }
 
-            enemy.updateMovement(player, nearby);
+    private void assignEnemyLanes() {
+        int maxPerLane = multiFlowField.getMaxPerLane();
+        for (int i = 0; i < enemies.size(); i++) {
+            Enemy e = enemies.get(i);
+            int lane = i / maxPerLane;
+            if (lane >= multiFlowField.getActiveLanes()) {
+                lane = multiFlowField.getActiveLanes() - 1;
+            }
+            e.setLaneIndex(lane);
         }
     }
 

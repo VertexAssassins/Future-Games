@@ -1,5 +1,6 @@
 core\StartScreen.class
 utils\MusicTrack.class
+utils\MultiFlowField.class
 utils\Quadtree.class
 core\GameLoop.class
 waves\Wave$SpawnRequest.class
@@ -23,6 +24,7 @@ core\ShopItem.class
 core\GamePanel.class
 entities\Brute.class
 core\EnemySpawnRule.class
+utils\FlowField.class
 input\KeyBindings.class
 input\KeyBindings$2.class
 utils\Animation.class
