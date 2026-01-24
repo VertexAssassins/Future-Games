@@ -23,6 +23,9 @@ public class Enemy {
     private double orbitStrength;   // how strongly they orbit
     private double chaseStrength;   // base chase force
 
+    private double lastX, lastY;
+    private int stuckFrames = 0;
+
     private double knockbackVX = 0;
     private double knockbackVY = 0;
     private double knockbackDecay = 0.85; // decay factor per frame
@@ -146,22 +149,39 @@ public class Enemy {
         else if (vx < 0) facingRight = false;
     }
 
+    private void nudgeOutOfStuck(GameWorld world) {
+        for (int i = 0; i < 10; i++) {
+            double angle = Math.random() * Math.PI * 2;
+            double dist = 40 + Math.random() * 40; // 40–80 px
+
+            double nx = worldX + Math.cos(angle) * dist;
+            double ny = worldY + Math.sin(angle) * dist;
+
+            if (!world.collidesCircle(nx, ny, getColliderRadius())) {
+                worldX = nx;
+                worldY = ny;
+                return;
+            }
+        }
+    }
+
     public void updateMovement(Player player, List<Enemy> nearby) {
 
+        // -----------------------------------------
         // 1. Base chase direction
+        // -----------------------------------------
         double dx = wrappedDelta(player.getX(), worldX, Constants.MAP_WIDTH);
         double dy = wrappedDelta(player.getY(), worldY, Constants.MAP_HEIGHT);
 
         double distToPlayer = Math.sqrt(dx*dx + dy*dy);
-
         double toPlayerX = dx / distToPlayer;
         double toPlayerY = dy / distToPlayer;
 
-        // -----------------------------
+
+        // -----------------------------------------
         // 2. Separation steering
-        // -----------------------------
-        double sepX = 0;
-        double sepY = 0;
+        // -----------------------------------------
+        double sepX = 0, sepY = 0;
 
         for (Enemy other : nearby) {
             if (other == this) continue;
@@ -177,59 +197,165 @@ public class Enemy {
             }
         }
 
-        // -----------------------------
-        // 3. Directional noise
-        // -----------------------------
+
+        // -----------------------------------------
+        // 3. Noise
+        // -----------------------------------------
         double noiseX = (Math.random() * 2 - 1) * noiseStrength;
         double noiseY = (Math.random() * 2 - 1) * noiseStrength;
 
-        // -----------------------------
-        // 4. Orbiting behavior
-        // -----------------------------
-        double orbitX = 0;
-        double orbitY = 0;
+
+        // -----------------------------------------
+        // 4. Orbiting
+        // -----------------------------------------
+        double orbitX = 0, orbitY = 0;
 
         if (distToPlayer < orbitRadius) {
             orbitX = -toPlayerY;
             orbitY = toPlayerX;
         }
 
-        // -----------------------------
+
+        // -----------------------------------------
         // 5. Combine steering forces
-        // -----------------------------
-        double finalX =
-                toPlayerX * chaseStrength +
-                sepX * separationStrength +
-                noiseX +
-                orbitX * orbitStrength;
+        // -----------------------------------------
+        double vx =
+            toPlayerX * chaseStrength +
+            sepX * separationStrength +
+            noiseX +
+            orbitX * orbitStrength;
 
-        double finalY =
-                toPlayerY * chaseStrength +
-                sepY * separationStrength +
-                noiseY +
-                orbitY * orbitStrength;
+        double vy =
+            toPlayerY * chaseStrength +
+            sepY * separationStrength +
+            noiseY +
+            orbitY * orbitStrength;
 
-        // Normalize final vector
-        double len = Math.sqrt(finalX*finalX + finalY*finalY);
+        // Normalize
+        double len = Math.sqrt(vx*vx + vy*vy);
         if (len > 0) {
-            finalX /= len;
-            finalY /= len;
+            vx /= len;
+            vy /= len;
         }
 
+
+        // -----------------------------------------
+        // 6. Multi-ray obstacle avoidance
+        // -----------------------------------------
+        double lookAhead = Math.max(60, speed * 20);
+        double sideOffset = 35;
+        double avoidStrength = 0.8;
+
+        double aheadX  = worldX + vx * lookAhead;
+        double aheadY  = worldY + vy * lookAhead;
+
+        double leftX   = worldX + (-vy) * sideOffset;
+        double leftY   = worldY + (vx)  * sideOffset;
+
+        double rightX  = worldX + (vy) * sideOffset;
+        double rightY  = worldY + (-vx) * sideOffset;
+
+        double nearX = worldX + vx * (lookAhead * 0.4);
+        double nearY = worldY + vy * (lookAhead * 0.4);
+
+        boolean hitNear = world.collidesCircle(nearX, nearY, size * 0.5);
+
+        boolean hitAhead = world.collidesCircle(aheadX, aheadY, size * 0.5);
+        boolean hitLeft  = world.collidesCircle(leftX,  leftY,  size * 0.5);
+        boolean hitRight = world.collidesCircle(rightX, rightY, size * 0.5);
+
+        if (hitAhead || hitNear) {
+            // compute perpendicular vector
+            double perpX = -vy;
+            double perpY =  vx;
+
+            if (!hitLeft) {
+                vx += perpX * avoidStrength;
+                vy += perpY * avoidStrength;
+            } else if (!hitRight) {
+                vx -= perpX * avoidStrength;
+                vy -= perpY * avoidStrength;
+            } else {
+                // both sides blocked → reverse slightly
+                vx = -vx;
+                vy = -vy;
+            }
+
+            // renormalize
+            double alen = Math.sqrt(vx*vx + vy*vy);
+            if (alen > 0) {
+                vx /= alen;
+                vy /= alen;
+            }
+        }
+
+
+        // -----------------------------------------
+        // 7. Stuck detection + recovery
+        // -----------------------------------------
+        double movedDist = Math.hypot(worldX - lastX, worldY - lastY);
+
+        if (movedDist < 0.5) {
+            stuckFrames++;
+        } else {
+            stuckFrames = 0;
+        }
+
+        lastX = worldX;
+        lastY = worldY;
+
+        if (stuckFrames > 25) {
+            // push enemy away from nearest obstacle
+            double bestAngle = Math.random() * Math.PI * 2;
+
+            for (int i = 0; i < 12; i++) {
+                double angle = i * (Math.PI / 6);
+                double nx = worldX + Math.cos(angle) * 50;
+                double ny = worldY + Math.sin(angle) * 50;
+
+                if (!world.collidesCircle(nx, ny, getColliderRadius())) {
+                    bestAngle = angle;
+                    break;
+                }
+            }
+
+            worldX += Math.cos(bestAngle) * 40;
+            worldY += Math.sin(bestAngle) * 40;
+
+            stuckFrames = 0;
+        } 
+
+        // -----------------------------------------
+        // 8. Apply movement with sliding
+        // -----------------------------------------
+        double tryX = WorldManager.wrapX(worldX + vx * speed);
+        double tryY = WorldManager.wrapY(worldY + vy * speed);
+
+        double radius = getColliderRadius();
+
+        boolean canMoveX = !world.collidesCircle(tryX, worldY, radius);
+        boolean canMoveY = !world.collidesCircle(worldX, tryY, radius);
+
+        if (canMoveX) worldX = tryX;
+        if (canMoveY) worldY = tryY;
+
+        if (!canMoveX && !canMoveY) {
+            // try sliding along perpendicular direction
+            double slideX = WorldManager.wrapX(worldX + (-vy) * speed);
+            double slideY = WorldManager.wrapY(worldY + (vx) * speed);
+
+            if (!world.collidesCircle(slideX, worldY, radius)) {
+                worldX = slideX;
+            } else if (!world.collidesCircle(worldX, slideY, radius)) {
+                worldY = slideY;
+            }
+        }
+
+
+        // -----------------------------------------
+        // 9. Update facing direction
+        // -----------------------------------------
         updateFacingDirection(toPlayerX);
-
-        // -----------------------------
-        // 6. Apply movement
-        // -----------------------------
-        double nextX = WorldManager.wrapX(worldX + finalX * speed);
-        double nextY = WorldManager.wrapY(worldY + finalY * speed);
-
-        double r = getColliderRadius();
-
-        if (!world.collidesCircle(nextX, nextY, r)) {
-            worldX = nextX;
-            worldY = nextY;
-        }
     }
 
 

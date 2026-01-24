@@ -16,7 +16,7 @@ public class GameWorld {
     private final int tilesX;       // worldWidth  / tileSize
     private final int tilesY;       // worldHeight / tileSize
 
-    public static boolean DEBUG_COLLISION = true;
+    public static boolean DEBUG_COLLISION = false;
 
     private int[][] tileMap;        // tile indices
     private Image[] groundTiles;    // your 5 tile images

@@ -53,43 +53,60 @@ public class Wave {
         for (SpawnRequest request : spawnRequests) {
             if (request.getCount() > 0) {
                 try {
-                    double[] coords = getRandomSpawnCoordinates(player);
+                    // 1. Create a temp enemy to get its collider radius
+                    Enemy temp = request.getType()
+                        .getConstructor(double.class, double.class, GameWorld.class)
+                        .newInstance(0, 0, world);
+
+                    double radius = temp.getColliderRadius();
+
+                    // 2. Get a valid spawn location
+                    double[] coords = getRandomSpawnCoordinates(player, world, radius);
+
+                    // 3. Spawn the real enemy
                     Enemy enemy = request.getType()
                         .getConstructor(double.class, double.class, GameWorld.class)
                         .newInstance(coords[0], coords[1], world);
+
                     request.decrementCount();
                     totalSpawned++;
                     return enemy;
+
                 } catch (Exception e) {
                     e.printStackTrace();
-                    }
                 }
             }
+        }
         return null;
     }
 
-    private double[] getRandomSpawnCoordinates(Player player) {
-        double safeDistance = 800; // optional: avoid spawning too close
+    private double[] getRandomSpawnCoordinates(Player player, GameWorld world, double enemyRadius) {
+        double safeDistance = 800;
         double px = player.getX();
         double py = player.getY();
 
         double x, y;
-        double distance = 0;
         int attempts = 0;
 
-        do {
+        while (attempts < 40) {
             x = Math.random() * Constants.MAP_WIDTH;
             y = Math.random() * Constants.MAP_HEIGHT;
 
             double dx = x - px;
             double dy = y - py;
-            distance = Math.sqrt(dx * dx + dy * dy);
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            boolean farEnough = distance >= safeDistance;
+            boolean notInsideObject = !world.collidesCircle(x, y, enemyRadius);
+
+            if (farEnough && notInsideObject) {
+                return new double[]{x, y};
+            }
 
             attempts++;
-            if (attempts > 10) break;
-        } while (distance < safeDistance);
-
-        return new double[] { x, y };
+        }
+        // fallback
+        return new double[]{Math.random() * Constants.MAP_WIDTH, Math.random() * Constants.MAP_HEIGHT};
     }
 
     public boolean isFinished() {
