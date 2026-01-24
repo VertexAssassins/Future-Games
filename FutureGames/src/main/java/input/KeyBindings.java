@@ -49,6 +49,24 @@ public class KeyBindings {
                 }
             });
         }
+
+        // Q = previous
+        im.put(KeyStroke.getKeyStroke("pressed Q"), "weapon_prev");
+        am.put("weapon_prev", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                weaponSwitcher.switchWeapon(-1); // previous
+            }
+        });
+
+        // E = next
+        im.put(KeyStroke.getKeyStroke("pressed E"), "weapon_next");
+        am.put("weapon_next", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                weaponSwitcher.switchWeapon(-2); // next (special code)
+            }
+        });
     }
 
     /** Interface to switch weapons */

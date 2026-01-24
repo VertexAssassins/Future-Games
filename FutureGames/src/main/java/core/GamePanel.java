@@ -34,6 +34,17 @@ public class GamePanel extends JPanel {
     private final MusicManager musicManager = new MusicManager();
     private final List<HealthPickup> healthPickups = new ArrayList<>();
     private final List<BloodSplatter> bloodEffects = new ArrayList<>();
+    private final WeaponType[] weaponOrder = {
+        WeaponType.PISTOL,
+        WeaponType.REVOLVER,
+        WeaponType.SHOTGUN,
+        WeaponType.SMG,
+        WeaponType.ASSAULTRIFLE,
+        WeaponType.AUTOSHOTGUN,
+        WeaponType.LMG
+    };
+
+    private int currentWeaponIndex = 0;
     
     private GameState gameState = GameState.PLAYING;
     public Rectangle retryButton = new Rectangle( getWidth() / 2 - 200, getHeight() / 2, 400, 100 );
@@ -167,50 +178,27 @@ public class GamePanel extends JPanel {
         });
 
         WeaponUnlockManager.unlock("pistol");
-        KeyBindings.setup(this, player, index -> {
+            KeyBindings.setup(this, player, index -> {
+
+            if (index == -1) {
+                cycleWeapon(-1); // previous
+                return;
+            }
+
+            if (index == -2) {
+                cycleWeapon(+1); // next
+                return;
+            }
+
+            // Otherwise it's a number key
             switch (index) {
-                case 0 -> {
-                    if (WeaponUnlockManager.isUnlocked("pistol")) {
-                        weaponManager.switchTo(WeaponType.PISTOL);
-                        player.setWeaponAnimation(WeaponType.PISTOL);
-                    }
-                }
-                case 1 -> {
-                    if (WeaponUnlockManager.isUnlocked("revolver")) {
-                        weaponManager.switchTo(WeaponType.REVOLVER);
-                        player.setWeaponAnimation(WeaponType.REVOLVER);
-                    }
-                }
-                case 2 -> {
-                    if (WeaponUnlockManager.isUnlocked("shotgun")) {
-                        weaponManager.switchTo(WeaponType.SHOTGUN);
-                        player.setWeaponAnimation(WeaponType.SHOTGUN);
-                    }
-                }
-                case 3 -> {
-                    if (WeaponUnlockManager.isUnlocked("smg")) {
-                        weaponManager.switchTo(WeaponType.SMG);
-                        player.setWeaponAnimation(WeaponType.SMG);
-                    }
-                }
-                case 4 -> {
-                    if (WeaponUnlockManager.isUnlocked("assaultrifle")) {
-                        weaponManager.switchTo(WeaponType.ASSAULTRIFLE);
-                        player.setWeaponAnimation(WeaponType.ASSAULTRIFLE);
-                    }
-                }
-                case 5 -> {
-                    if (WeaponUnlockManager.isUnlocked("autoshotgun")) {
-                        weaponManager.switchTo(WeaponType.AUTOSHOTGUN);
-                        player.setWeaponAnimation(WeaponType.AUTOSHOTGUN);
-                    }
-                }
-                case 6 -> {
-                    if (WeaponUnlockManager.isUnlocked("lmg")) {
-                        weaponManager.switchTo(WeaponType.LMG);
-                        player.setWeaponAnimation(WeaponType.LMG);
-                    }
-                }
+                case 0 -> trySwitch(WeaponType.PISTOL);
+                case 1 -> trySwitch(WeaponType.REVOLVER);
+                case 2 -> trySwitch(WeaponType.SHOTGUN);
+                case 3 -> trySwitch(WeaponType.SMG);
+                case 4 -> trySwitch(WeaponType.ASSAULTRIFLE);
+                case 5 -> trySwitch(WeaponType.AUTOSHOTGUN);
+                case 6 -> trySwitch(WeaponType.LMG);
             }
         });
 
@@ -351,6 +339,39 @@ public class GamePanel extends JPanel {
                 repaint();
             }
         });
+    }
+
+    private void cycleWeapon(int direction) {
+        int total = weaponOrder.length;
+
+        // Move index
+        currentWeaponIndex = (currentWeaponIndex + direction + total) % total;
+
+        WeaponType next = weaponOrder[currentWeaponIndex];
+
+        // Only switch if unlocked
+        if (WeaponUnlockManager.isUnlocked(next.name().toLowerCase())) {
+            weaponManager.switchTo(next);
+            player.setWeaponAnimation(next);
+        } else {
+            // If locked, keep cycling until you find an unlocked one
+            cycleWeapon(direction);
+        }
+    }
+
+    private void trySwitch(WeaponType type) {
+        if (WeaponUnlockManager.isUnlocked(type.name().toLowerCase())) {
+            weaponManager.switchTo(type);
+            player.setWeaponAnimation(type);
+
+            // Sync circular index
+            for (int i = 0; i < weaponOrder.length; i++) {
+                if (weaponOrder[i] == type) {
+                    currentWeaponIndex = i;
+                    break;
+                }
+            }
+        }
     }
 
     private void togglePause() {

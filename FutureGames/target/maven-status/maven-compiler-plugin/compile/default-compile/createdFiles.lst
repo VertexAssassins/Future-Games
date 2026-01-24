@@ -23,6 +23,7 @@ core\ShopItem.class
 core\GamePanel.class
 entities\Brute.class
 core\EnemySpawnRule.class
+input\KeyBindings$5.class
 utils\FlowField.class
 input\KeyBindings.class
 input\KeyBindings$2.class
@@ -48,6 +49,7 @@ weapons\Weapon.class
 input\KeyBindings$3.class
 gameModificationCards\Modifier.class
 gameModificationCards\ModifierCard.class
+input\KeyBindings$6.class
 utils\PlayerAnimationSet.class
 core\Main.class
 core\WorldManager.class
