@@ -1,8 +1,20 @@
 package core;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
 import weapons.WeaponUnlockManager;
-import java.awt.*;
 
 public class StartScreen extends JPanel {
 
@@ -52,7 +64,7 @@ public class StartScreen extends JPanel {
         try {
             customFont = Font.createFont(
                     Font.TRUETYPE_FONT,
-                    getClass().getResourceAsStream("/fonts/GOOGLE-SPIES PERSONNAL USE ONLY.ttf")
+                    getClass().getResourceAsStream("/fonts/GOOGLE-SPIES.TTF")
             ).deriveFont(96f); // set size here
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);

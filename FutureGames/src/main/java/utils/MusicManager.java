@@ -1,6 +1,9 @@
 package utils;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MusicManager {
@@ -9,6 +12,7 @@ public class MusicManager {
     private final Deque<MusicTrack> lastPlayed = new ArrayDeque<>(5);
 
     private float musicVolume = 1.0f;
+    private boolean paused = false;
 
     private MusicTrack current;
 
@@ -19,36 +23,23 @@ public class MusicManager {
 
     private void loadTracks() {
         try {
-            // Get the directory inside the JAR/resources
-            var dirURL = getClass().getResource("/music/");
-            if (dirURL == null) {
-                System.err.println("Music folder not found");
+            var codeSource = getClass().getProtectionDomain().getCodeSource();
+            if (codeSource == null) {
+                System.err.println("No code source found");
                 return;
             }
 
-            // If running from IDE (not JAR), dirURL is a file: URL
-            if (dirURL.getProtocol().equals("file")) {
-                var folder = new java.io.File(dirURL.toURI());
-                for (var file : Objects.requireNonNull(folder.listFiles())) {
-                    if (isAudioFile(file.getName())) {
-                        tracks.add(new MusicTrack("/music/" + file.getName()));
-                    }
-                }
-                return;
-            }
+            var jarURL = codeSource.getLocation();
+            try (var zip = new java.util.zip.ZipInputStream(jarURL.openStream())) {
 
-            // If running from JAR, we need to scan entries inside the JAR
-            if (dirURL.getProtocol().equals("jar")) {
-                String path = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!"));
-                try (var jar = new java.util.jar.JarFile(path)) {
-                    var entries = jar.entries();
-                    while (entries.hasMoreElements()) {
-                        var entry = entries.nextElement();
-                        String name = entry.getName();
+                java.util.zip.ZipEntry entry;
+                while ((entry = zip.getNextEntry()) != null) {
+                    String name = entry.getName();
 
-                        if (name.startsWith("music/") && isAudioFile(name)) {
-                            tracks.add(new MusicTrack("/" + name));
-                        }
+                    if (!entry.isDirectory() && isAudioFile(name) && name.contains("music/")) {
+                        String clean = name.substring(name.indexOf("music/"));
+                        System.out.println("Adding track: /" + clean);
+                        tracks.add(new MusicTrack("/" + clean));
                     }
                 }
             }
@@ -56,6 +47,8 @@ public class MusicManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        System.out.println("Loaded tracks: " + tracks.size());
     }
 
     private boolean isAudioFile(String name) {
@@ -66,9 +59,11 @@ public class MusicManager {
     private void startMusicThread() {
         new Thread(() -> {
             while (true) {
-                if (current == null || current.isFinished()) {
-                    current = pickNextTrack();
-                    current.play();
+                if (!paused) {
+                    if (current == null || current.isFinished()) {
+                        current = pickNextTrack();
+                        current.play();
+                    }
                 }
 
                 try {
@@ -106,6 +101,21 @@ public class MusicManager {
 
         if (current != null) {
             current.setVolume(v);
+        }
+    }
+
+    public void pauseMusic() {
+        paused = true;
+        if (current != null) current.stop();
+    }
+
+    public void resumeMusic() {
+        paused = false;
+    }
+
+    public void stop() {
+        if (current != null) {
+            current.stop();
         }
     }
 }

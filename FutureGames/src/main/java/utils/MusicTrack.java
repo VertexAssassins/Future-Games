@@ -1,8 +1,11 @@
 package utils;
 
-import javax.sound.sampled.*;
-
 import java.net.URL;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 
 public class MusicTrack {
     private Clip clip;
@@ -47,7 +50,11 @@ public class MusicTrack {
     }
 
     public void stop() {
-        if (clip != null) clip.stop();
+        if (clip != null) {
+            clip.stop();
+            clip.flush();
+            clip.setFramePosition(0); // reset to start
+        }
     }
 
     public boolean isFinished() {

@@ -33,6 +33,7 @@ public class ShopPanel {
         items.add(new ShopItem("assaultrifle", "Assault Rifle", 1500, 3000));
         items.add(new ShopItem("autoshotgun", "Auto Shotgun", 5000, 7500));
         items.add(new ShopItem("lmg", "LMG", 10000, 15000));
+        items.add(new ShopItem(ShopItem.Type.SPECIAL,"biggerstick","The Bigger Stick", 50000));
 
         for (ShopItem item : items) {
             try {
@@ -133,31 +134,34 @@ public class ShopPanel {
         g.setFont(easyText.deriveFont(Font.BOLD, 20f));
         g.drawString(item.name, x + 130, y + 40);
 
-        boolean unlocked = WeaponUnlockManager.isUnlocked(item.weaponId);
-        boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
+        if (item.type == ShopItem.Type.WEAPON) {
+            boolean unlocked = WeaponUnlockManager.isUnlocked(item.weaponId);
+            boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
 
-        // Status text
-        g.setFont(easyText.deriveFont(Font.BOLD, 22f));
+            g.setFont(easyText.deriveFont(Font.BOLD, 22f));
 
-        if (!unlocked) {
-            g.setColor(Color.YELLOW);
-            g.drawString("Price: " + item.price, x + 130, y + 80);
-
-            // Unlock button
-            g.drawImage(unlockButtonImg, x + 350, y + 20, 180, 60, null);
-
-        } else {
-            if (!upgraded) {
-                g.setColor(Color.CYAN);
-            g.drawString("Upgrade: " + item.upgradeCost, x + 130, y + 80);
-
-                // Upgrade button
-                g.drawImage(upgradeButtonImg, x + 350, y + 20, 180, 60, null);
+            if (!unlocked) {
+                g.setColor(Color.YELLOW);
+                g.drawString("Price: " + item.price, x + 130, y + 80);
+                g.drawImage(unlockButtonImg, x + 350, y + 20, 180, 60, null);
 
             } else {
-                g.setColor(Color.GREEN);
-                g.drawString("Upgraded!", x + 130, y + 80);
+                if (!upgraded) {
+                    g.setColor(Color.CYAN);
+                    g.drawString("Upgrade: " + item.upgradeCost, x + 130, y + 80);
+                    g.drawImage(upgradeButtonImg, x + 350, y + 20, 180, 60, null);
+                } else {
+                    g.setColor(Color.GREEN);
+                    g.drawString("Upgraded!", x + 130, y + 80);
+                }
             }
+        } else if (item.type == ShopItem.Type.SPECIAL) {
+            // The Bigger Stick
+            g.setFont(easyText.deriveFont(Font.BOLD, 22f));
+            g.setColor(Color.MAGENTA);
+            g.drawString("Price: " + item.price, x + 130, y + 80);
+
+            g.drawImage(unlockButtonImg, x + 350, y + 20, 180, 60, null);
         }
 
         // Draw temporary error message
@@ -196,16 +200,23 @@ public class ShopPanel {
             Rectangle unlockButton = new Rectangle(buttonX, unlockY, 180, 60);
             Rectangle upgradeButton = new Rectangle(buttonX, upgradeY, 180, 60);
 
-            boolean unlocked = WeaponUnlockManager.isUnlocked(item.weaponId);
-            boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
+            if (item.type == ShopItem.Type.WEAPON) {
+                boolean unlocked = WeaponUnlockManager.isUnlocked(item.weaponId);
+                boolean upgraded = PersistenceManager.loadWeaponUpgraded(item.weaponId);
 
-            if (!unlocked) {
-                if (unlockButton.contains(mx, my)) {
-                    tryUnlock(item, player);
+                if (!unlocked) {
+                    if (unlockButton.contains(mx, my)) {
+                        tryUnlock(item, player);
+                    }
+                } else if (!upgraded) {
+                    if (upgradeButton.contains(mx, my)) {
+                        tryUpgrade(item, player);
+                    }
                 }
-            } else if (!upgraded) {
-                if (upgradeButton.contains(mx, my)) {
-                    tryUpgrade(item, player);
+
+            } else if (item.type == ShopItem.Type.SPECIAL) {
+                if (unlockButton.contains(mx, my)) {
+                    tryActivateSpecial(item, player);
                 }
             }
 
@@ -236,5 +247,25 @@ public class ShopPanel {
         } else {
             item.errorMessageUntil = System.currentTimeMillis() + 5000; 
         }
+    }
+
+    private void tryActivateSpecial(ShopItem item, Player player) {
+        if (!"biggerstick".equals(item.weaponId)) return; // future-proof
+
+        if (player.getPoints() >= item.price) {
+            player.addPoints(-item.price);
+
+            if (onBigStickActivated != null) {
+                onBigStickActivated.run();
+            }
+        } else {
+            item.errorMessageUntil = System.currentTimeMillis() + 5000;
+        }
+    }
+
+    private Runnable onBigStickActivated;
+
+    public void setOnBigStickActivated(Runnable r) {
+        this.onBigStickActivated = r;
     }
 }

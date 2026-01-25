@@ -5,5 +5,6 @@ public enum GameState {
     PAUSED,
     CARD_SELECTION,
     GAME_OVER,
-    SHOP
+    SHOP,
+    BIG_STICK_ENDING
 }

@@ -1,27 +1,51 @@
 package core;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import java.awt.*;
-import java.awt.event.*;
+import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import entities.Enemy;
 import entities.HealthPickup;
 import entities.Player;
 import entities.Projectile;
-import gameModificationCards.*;
+import gameModificationCards.Modifier;
+import gameModificationCards.ModifierCard;
 import input.KeyBindings;
 import utils.BloodSplatter;
 import utils.MusicManager;
 import utils.Sound;
-import waves.WaveManager;
-import weapons.*;
 import utils.UISlider;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import waves.WaveManager;
+import weapons.AssaultRifle;
+import weapons.AutoShotgun;
+import weapons.LMG;
+import weapons.Pistol;
+import weapons.PumpShotgun;
+import weapons.Revolver;
+import weapons.SMG;
+import weapons.Weapon;
+import weapons.WeaponManager;
+import weapons.WeaponType;
+import weapons.WeaponUnlockManager;
 
 public class GamePanel extends JPanel {
     private final Player player = new Player();
@@ -54,6 +78,7 @@ public class GamePanel extends JPanel {
     private Rectangle[] cardSelectionRects;
     private List<ModifierCard> currentCards;
     private Image playButtonImg;
+    private long bigStickStartTime = 0;
 
     // Pause menu UI
     private Rectangle resumeButton;
@@ -67,6 +92,7 @@ public class GamePanel extends JPanel {
     private boolean draggingSfx = false;
 
     private boolean debugEnabled = false;
+    private Sound bigStickSound = new Sound("/videos/TheBiggerStick.wav");
 
     public GameWorld getWorld() { return world; }
     public boolean isDebugEnabled() { return debugEnabled; }
@@ -211,6 +237,10 @@ public class GamePanel extends JPanel {
                 int mx = e.getX();
                 int my = e.getY();
 
+                if (gameState == GameState.BIG_STICK_ENDING) {
+                    return; // ignore all input during the ending
+                }
+
                 // --- GAME OVER SCREEN BUTTONS ---
                 if (gameState == GameState.GAME_OVER) {
 
@@ -339,6 +369,41 @@ public class GamePanel extends JPanel {
                 repaint();
             }
         });
+        shopPanel.setOnBigStickActivated(() -> {
+            playCutscene();
+        });
+    }
+
+    private JCodecVideoPanel videoPanel;
+
+    private void playCutscene() {
+        gameState = GameState.BIG_STICK_ENDING;
+
+        removeAll();
+        revalidate();
+        repaint();
+
+        musicManager.pauseMusic();
+        bigStickSound.play();
+
+        videoPanel = new JCodecVideoPanel("/videos/TheBiggerStick.mp4", () -> {
+            SwingUtilities.invokeLater(() -> {
+
+                remove(videoPanel);
+                videoPanel = null;
+
+                gameState = GameState.GAME_OVER; // or ENDING
+                musicManager.resumeMusic();
+                repaint();
+            });
+        });
+
+        setLayout(new BorderLayout());
+        add(videoPanel, BorderLayout.CENTER);
+        revalidate();
+        repaint();
+
+        new Thread(videoPanel).start();
     }
 
     private void cycleWeapon(int direction) {
@@ -418,6 +483,11 @@ public class GamePanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        if (gameState == GameState.BIG_STICK_ENDING) {
+            super.paintComponent(g);
+            return; // do NOT draw game or death UI
+        }
+        
         super.paintComponent(g);
 
         updateUIRectangles();

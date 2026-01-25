@@ -15,6 +15,7 @@ utils\Sound.class
 core\WorldObject.class
 weapons\PumpShotgun.class
 weapons\WeaponFactory.class
+core\JCodecVideoPanel.class
 entities\HealthPickup.class
 entities\Player.class
 entities\Player$1.class
@@ -66,6 +67,7 @@ gameModificationCards\RarityValues.class
 weapons\WeaponManager.class
 weapons\WeaponUnlockManager.class
 weapons\Revolver.class
+core\ShopItem$Type.class
 gameModificationCards\ModifierLibrary$1.class
 weapons\Pistol.class
 waves\WaveBlueprint$ConditionalSpawnRule.class

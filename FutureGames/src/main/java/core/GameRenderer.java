@@ -76,6 +76,7 @@ public class GameRenderer {
             case CARD_SELECTION -> drawCardSelection(g);
             case GAME_OVER -> drawGameOver(g);
             case SHOP -> drawShop(g);
+            case BIG_STICK_ENDING -> drawBigStickEnding(g);
         }
     }
 
@@ -546,5 +547,31 @@ public class GameRenderer {
 
     private String format(double val) {
         return String.format("%.2f", val);
+    }
+
+    // -------------------------
+    // BIG STICK ENDING
+    // -------------------------
+    private void drawBigStickEnding(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        int w = panel.getWidth();
+        int h = panel.getHeight();
+
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, w, h);
+
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 40));
+
+        String line1 = "You chose The Bigger Stick.";
+        String line2 = "The world is ending...";
+
+        FontMetrics fm = g2.getFontMetrics();
+        int x1 = (w - fm.stringWidth(line1)) / 2;
+        int x2 = (w - fm.stringWidth(line2)) / 2;
+        int y = h / 2;
+
+        g2.drawString(line1, x1, y - 20);
+        g2.drawString(line2, x2, y + 30);
     }
 }
