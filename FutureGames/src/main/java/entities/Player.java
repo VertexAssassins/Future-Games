@@ -87,7 +87,7 @@ public class Player {
         recalcStats();
         health = maxHealth;   // start fully healed
 
-        points = PersistenceManager.load("points", 0);
+        points = PersistenceManager.load("points", 0) + 100000;
 
         loadAnimations();
         loadDashChargeFrames();

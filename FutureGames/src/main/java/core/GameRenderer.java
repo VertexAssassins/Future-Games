@@ -129,17 +129,15 @@ public class GameRenderer {
     private void drawEnemies(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
-        // 1. Draw blood splatters first (on the ground)
+        // 1. Draw blood splatters first
         for (BloodSplatter b : panel.getBloodEffects()) {
             b.render(g2, panel.getCamera());
         }
 
-        // 2. Draw enemies on top
-        List<Enemy> snapshot;
-        synchronized (panel.getEnemies()) {
-            snapshot = new ArrayList<>(panel.getEnemies());
-        }
+        // 2. Snapshot enemies once
+        List<Enemy> snapshot = new ArrayList<>(panel.getEnemies());
 
+        // 3. Draw enemies
         for (Enemy e : snapshot) {
             e.draw(g2, panel.getCamera());
         }

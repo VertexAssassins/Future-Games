@@ -149,7 +149,7 @@ public class ShopPanel {
         } else {
             if (!upgraded) {
                 g.setColor(Color.CYAN);
-                g.drawString("Upgrade Available", x + 130, y + 80);
+            g.drawString("Upgrade: " + item.upgradeCost, x + 130, y + 80);
 
                 // Upgrade button
                 g.drawImage(upgradeButtonImg, x + 350, y + 20, 180, 60, null);
