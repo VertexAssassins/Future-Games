@@ -4,8 +4,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import entities.Enemy;
-import java.awt.Color;
-import java.awt.Graphics;
 
 public class Quadtree {
     private static final int MAX_OBJECTS = 6;

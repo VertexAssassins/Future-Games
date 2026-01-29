@@ -1,13 +1,11 @@
 package core;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
-import javax.swing.JPanel;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jcodec.api.awt.AWTFrameGrab;
 import org.jcodec.common.io.NIOUtils;
@@ -16,19 +14,31 @@ public class JCodecVideoPanel extends JPanel implements Runnable {
 
     private final String videoPath;
     private final Runnable onFinished;
-    private volatile boolean playing = true;
+    private final Runnable onReady;
 
+    private volatile boolean playing = true;
+    private volatile boolean loading = true;
+
+    private List<BufferedImage> frames = new ArrayList<>();
     private BufferedImage currentFrame;
 
-    public JCodecVideoPanel(String videoPath, Runnable onFinished) {
+    public JCodecVideoPanel(String videoPath, Runnable onReady, Runnable onFinished) {
         this.videoPath = videoPath;
+        this.onReady = onReady;
         this.onFinished = onFinished;
         setBackground(Color.BLACK);
     }
 
     @Override
     public void run() {
-        File tempFile = null;
+        try {
+            // Wait until panel has a real size
+            while (getWidth() == 0 || getHeight() == 0) {
+                Thread.sleep(10);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         try {
             // Load MP4 from resources
@@ -39,27 +49,40 @@ public class JCodecVideoPanel extends JPanel implements Runnable {
                 return;
             }
 
-            // Write to a temporary file
-            tempFile = File.createTempFile("cutscene", ".mp4");
+            // Write to temp file
+            File tempFile = File.createTempFile("cutscene", ".mp4");
             tempFile.deleteOnExit();
-
             try (FileOutputStream fos = new FileOutputStream(tempFile)) {
                 is.transferTo(fos);
             }
 
-            // JCodec can now read it
+            // Decode all frames first
             AWTFrameGrab grab = AWTFrameGrab.createAWTFrameGrab(
-                NIOUtils.readableChannel(tempFile)
+                    NIOUtils.readableChannel(tempFile)
             );
 
-            while (playing) {
-                BufferedImage frame = grab.getFrame();
-                if (frame == null) break;
+            BufferedImage frame;
+            int targetW = getWidth();
+            int targetH = getHeight();
 
-                currentFrame = frame;
+            while ((frame = grab.getFrame()) != null) {
+                BufferedImage scaled = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2 = scaled.createGraphics();
+                g2.drawImage(frame, 0, 0, targetW, targetH, null);
+                g2.dispose();
+
+                frames.add(scaled);
+            }
+
+            loading = false;
+
+            if (onReady != null) onReady.run();
+
+            for (BufferedImage f : frames) {
+                if (!playing) break;
+                currentFrame = f;
                 repaint();
-
-                Thread.sleep(33); // ~30 FPS
+                Thread.sleep(33);
             }
 
         } catch (Exception e) {
@@ -73,8 +96,14 @@ public class JCodecVideoPanel extends JPanel implements Runnable {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        if (loading) {
+            g.setColor(Color.WHITE);
+            g.drawString("Loading cutscene...", 20, 20);
+            return;
+        }
+
         if (currentFrame != null) {
-            g.drawImage(currentFrame, 0, 0, getWidth(), getHeight(), null);
+            g.drawImage(currentFrame, 0, 0, null);
         }
     }
 

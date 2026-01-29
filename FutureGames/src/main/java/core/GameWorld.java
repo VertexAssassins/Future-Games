@@ -19,7 +19,7 @@ public class GameWorld {
     public static boolean DEBUG_COLLISION = false;
 
     private int[][] tileMap;        // tile indices
-    private Image[] groundTiles;    // your 5 tile images
+    private Image[] groundTiles;    // the 5 tile images
     private List<WorldObject> objects = new ArrayList<>();
     private List<Image> staticObjectImages = new ArrayList<>();
 
@@ -68,7 +68,7 @@ public class GameWorld {
 
     private void loadStaticObjects() {
         try {
-            // Add every object image you want to spawn
+            //Every object image to be loaded
             String[] names = {
                 "Hand-1.png",
                 "Hand-2.png",

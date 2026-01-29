@@ -250,7 +250,7 @@ public class ShopPanel {
     }
 
     private void tryActivateSpecial(ShopItem item, Player player) {
-        if (!"biggerstick".equals(item.weaponId)) return; // future-proof
+        if (!"biggerstick".equals(item.weaponId)) return;
 
         if (player.getPoints() >= item.price) {
             player.addPoints(-item.price);

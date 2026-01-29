@@ -380,26 +380,31 @@ public class GamePanel extends JPanel {
         gameState = GameState.BIG_STICK_ENDING;
 
         removeAll();
+        setLayout(new BorderLayout());  // ensure CENTER works
         revalidate();
         repaint();
 
         musicManager.pauseMusic();
-        bigStickSound.play();
 
-        videoPanel = new JCodecVideoPanel("/videos/TheBiggerStick.mp4", () -> {
-            SwingUtilities.invokeLater(() -> {
+        videoPanel = new JCodecVideoPanel(
+            "/videos/TheBiggerStick.mp4",
+            () -> bigStickSound.play(),
+            () -> {
+                SwingUtilities.invokeLater(() -> {
+                    remove(videoPanel);
+                    videoPanel = null;
 
-                remove(videoPanel);
-                videoPanel = null;
+                    gameState = GameState.GAME_OVER;
+                    musicManager.resumeMusic();
+                    repaint();
+                });
+            }
+        );
 
-                gameState = GameState.GAME_OVER; // or ENDING
-                musicManager.resumeMusic();
-                repaint();
-            });
-        });
-
-        setLayout(new BorderLayout());
+        // Make sure the panel fills the screen
         add(videoPanel, BorderLayout.CENTER);
+
+        // Force layout so getWidth/getHeight are correct
         revalidate();
         repaint();
 

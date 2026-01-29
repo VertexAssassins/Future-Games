@@ -74,7 +74,6 @@ waves\WaveBlueprint$ConditionalSpawnRule.class
 core\GameState.class
 core\GameWorld.class
 utils\MusicManager.class
-core\AnimatedObject.class
 weapons\AssaultRifle.class
 entities\Rabid.class
 input\KeyBindings$4.class
