@@ -32,7 +32,7 @@ public class ShopPanel {
         items.add(new ShopItem("smg", "SMG", 750, 1000));
         items.add(new ShopItem("assaultrifle", "Assault Rifle", 1500, 3000));
         items.add(new ShopItem("autoshotgun", "Auto Shotgun", 5000, 7500));
-        items.add(new ShopItem("lmg", "LMG", 10000, 15000));
+        items.add(new ShopItem("lmg", "MINIGUN", 10000, 15000));
         items.add(new ShopItem(ShopItem.Type.SPECIAL,"biggerstick","The Bigger Stick", 50000));
 
         for (ShopItem item : items) {

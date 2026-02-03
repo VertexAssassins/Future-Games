@@ -164,7 +164,7 @@ public class Enemy {
         Vector2 noise = computeNoise();
         Vector2 orbit = computeOrbit(player, world);
 
-        // Base direction is chase
+        // Base direction chase
         Vector2 dir = new Vector2(0, 0);
         dir.add(chase);
         dir.add(separation);
@@ -177,25 +177,25 @@ public class Enemy {
 
         double r = getColliderRadius();
 
-        // 2. Try full movement
+        // Full movement
         double nextX = worldX + dir.x * speed;
         double nextY = worldY + dir.y * speed;
 
         boolean moved = false;
 
-        // Try X movement
+        // X movement
         if (!world.collidesCircle(nextX, worldY, r)) {
             worldX = nextX;
             moved = true;
         }
 
-        // Try Y movement
+        // Y movement
         if (!world.collidesCircle(worldX, nextY, r)) {
             worldY = nextY;
             moved = true;
         }
 
-        // 3. Slide along obstacle if blocked
+        // Slide along obstacle if blocked
         if (!moved) {
             Vector2 perp = new Vector2(-dir.y, dir.x).normalized();
             double px = worldX + perp.x * speed;
@@ -208,7 +208,7 @@ public class Enemy {
             }
         }
 
-        // 4. If still stuck, try opposite perpendicular
+        // If still stuck, try opposite perpendicular
         if (!moved) {
             Vector2 perp = new Vector2(dir.y, -dir.x).normalized();
             double px = worldX + perp.x * speed;
@@ -221,7 +221,7 @@ public class Enemy {
             }
         }
 
-        // 5. Stuck detection
+        // Stuck detection
         if (Math.abs(worldX - lastX) < 0.3 && Math.abs(worldY - lastY) < 0.3)
             stuckFrames++;
         else
@@ -230,12 +230,12 @@ public class Enemy {
         lastX = worldX;
         lastY = worldY;
 
-        // 6. Teleport unstuck if needed
+        // Teleport unstuck if needed
         if (stuckFrames > 25) {
             teleportUnstuck(world);
         }
 
-        // 7. Update facing
+        // Update facing
         updateFacingDirection(dir.x);
     }
 

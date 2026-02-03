@@ -84,7 +84,7 @@ public class GameLoop extends Thread {
     }
 
     private void updateGameLogic() {
-
+        // Update player, wave manager, blood effects, enemies
         player.update();
         waveManager.update();
 
@@ -97,30 +97,37 @@ public class GameLoop extends Thread {
             enemy.update();
         }
 
+        // Build quadtree for spatial partitioning
         Quadtree quadtree = buildQuadtree();
 
+        // Update enemy movement with quadtree
         updateEnemyMovement(panel.getWorld(), quadtree);
         applyKnockbackMovement();
 
+        // Update weapons and handle shooting
         updateWeaponsAndShooting();
 
         resolveEnemyBounce(quadtree);
-        quadtree = rebuildQuadtree(); // final rebuild before projectile update
+        quadtree = rebuildQuadtree();
 
+        // Update projectiles with quadtree
         updateProjectiles(quadtree);
         
+        // Apply enemy attacks
         applyEnemyAttacks();
         checkPickupCollisions();
         handleEnemyDeaths();
         maybeAdvanceWave();
     }
 
+    // Update enemy movement using quadtree for collision checks
     private void updateEnemyMovement(GameWorld world, Quadtree quadtree) {
         for (Enemy enemy : enemies) {
             enemy.updateMovement(player, world, quadtree.query(enemy.getBounds()));
         }
     }
 
+    // Build quadtree from current enemies
     private Quadtree buildQuadtree() {
         Quadtree quadtree = new Quadtree(0, new Rectangle(0, 0, Constants.MAP_WIDTH, Constants.MAP_HEIGHT));
         for (Enemy e : enemies) quadtree.insert(e);
@@ -131,6 +138,7 @@ public class GameLoop extends Thread {
         return buildQuadtree(); // reuse logic
     }
 
+    // Resolve enemy-enemy bounces using quadtree for efficiency
     private void resolveEnemyBounce(Quadtree quadtree) {
         for (Enemy e : enemies) {
             List<Enemy> nearby = quadtree.query(e.getBounds());
@@ -142,12 +150,14 @@ public class GameLoop extends Thread {
         }
     }
 
+    // Apply knockback movement to enemies
     private void applyKnockbackMovement() {
         for (Enemy enemy : enemies) {
             enemy.applyKnockbackMovement();
         }
     }
 
+    // Update projectiles with collision checks using quadtree
     private void updateProjectiles(Quadtree quadtree) {
         synchronized (panel.getProjectiles()) {
             List<Projectile> projectiles = panel.getProjectiles();
@@ -155,14 +165,14 @@ public class GameLoop extends Thread {
             for (int i = projectiles.size() - 1; i >= 0; i--) {
                 Projectile p = projectiles.get(i);
 
-                // Step 1: move projectile
+                // Move projectile
                 boolean stillAlive = p.move();
                 if (!stillAlive) {
                     projectiles.remove(i);
                     continue;
                 }
 
-                // Step 2: check collision with fresh quadtree
+                // Check collision with fresh quadtree
                 List<Enemy> candidates = quadtree.query(p.getSweptAABB());
                 if (p.checkCollisions(candidates)) {
                     projectiles.remove(i);
@@ -174,12 +184,14 @@ public class GameLoop extends Thread {
         }
     }
 
+    // Apply enemy attacks to the player
     private void applyEnemyAttacks() {
         for (Enemy enemy : enemies) {
             enemy.attemptAttack(player);
         }
     }
 
+    // Update weapons and handle shooting input
     private void updateWeaponsAndShooting() {
         panel.getWeaponManager().update();
         if (panel.isMouseDown()) {
@@ -188,6 +200,7 @@ public class GameLoop extends Thread {
         }
     }
 
+    // Handle enemy deaths, drops, and effects
     private void handleEnemyDeaths() {
         for (Enemy e : enemies) {
             if (!e.isAlive() && !e.isDeathHandled()) {
@@ -205,10 +218,11 @@ public class GameLoop extends Thread {
             }
         }
 
-        // remove AFTER effects are spawned
+        // remove after effects are spawned
         enemies.removeIf(e -> !e.isAlive());
     }
 
+    // Check for collisions between player and health pickups
     private void checkPickupCollisions() {
         List<HealthPickup> pickups = panel.getHealthPickups();
 
@@ -229,6 +243,7 @@ public class GameLoop extends Thread {
         }
     }
 
+    // Roll health pickup amount based on defined probabilities
     private int rollHealthAmount() {
         double r = Math.random();
 
@@ -258,6 +273,7 @@ public class GameLoop extends Thread {
         }
     }
 
+    // Check if two enemies are colliding
     private boolean isColliding(Enemy a, Enemy b) {
         double dx = b.getX() - a.getX();
         double dy = b.getY() - a.getY();
@@ -266,6 +282,7 @@ public class GameLoop extends Thread {
         return distSq < minDist * minDist;
     }
 
+    // Resolve bounce between two colliding enemies
     private void resolveBounce(Enemy a, Enemy b) {
         double dx = b.getX() - a.getX();
         double dy = b.getY() - a.getY();

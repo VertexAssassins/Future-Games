@@ -48,7 +48,7 @@ public class Sound {
                 SourceDataLine line = AudioSystem.getSourceDataLine(pitchedFormat);
                 line.open(pitchedFormat);
 
-                // 🔊 Apply global SFX volume
+                // Apply global SFX volume
                 if (line.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                     FloatControl gain = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
 

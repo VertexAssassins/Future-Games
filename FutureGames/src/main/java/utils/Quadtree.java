@@ -6,8 +6,8 @@ import java.util.List;
 import entities.Enemy;
 
 public class Quadtree {
-    private static final int MAX_OBJECTS = 6;
-    private static final int MAX_LEVELS = 5;
+    private static final int MAX_OBJECTS = 10;
+    private static final int MAX_LEVELS = 10;
 
     private int level;
     private List<Enemy> objects;

@@ -135,6 +135,7 @@ public class GamePanel extends JPanel {
         this.gameState = state;
     }
 
+    // Get the angle from the player to the mouse cursor in world coordinates
     public double getAimAngle() {
     double worldMouseX = mousePos.x + camera.getOffsetX();
     double worldMouseY = mousePos.y + camera.getOffsetY();
@@ -374,8 +375,10 @@ public class GamePanel extends JPanel {
         });
     }
 
+    // JCodec video panel for cutscene playback
     private JCodecVideoPanel videoPanel;
 
+    // Play the "The Bigger Stick" cutscene
     private void playCutscene() {
         gameState = GameState.BIG_STICK_ENDING;
 
@@ -386,6 +389,7 @@ public class GamePanel extends JPanel {
 
         musicManager.pauseMusic();
 
+        // Create video panel
         videoPanel = new JCodecVideoPanel(
             "/videos/TheBiggerStick.mp4",
             () -> bigStickSound.play(),
