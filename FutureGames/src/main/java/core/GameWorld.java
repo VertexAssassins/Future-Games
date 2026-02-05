@@ -8,7 +8,7 @@ import java.util.List;
 
 public class GameWorld {
 
-    private final int tileSize = 32; // pixels
+    private final int tileSize = 32; // pixels upscaled from 16 to reduce graininess
 
     private final int worldWidth;   // in pixels
     private final int worldHeight;  // in pixels
@@ -41,6 +41,7 @@ public class GameWorld {
         spawnObjects();
     }
 
+    // Load ground tile images
     private void loadTiles() {
         groundTiles = new Image[5];
 
@@ -55,6 +56,7 @@ public class GameWorld {
         }
     }
 
+    // Generate random tile map for ground
     private void generateTileMap() {
         tileMap = new int[tilesX][tilesY];
         Random r = new Random();
@@ -92,6 +94,7 @@ public class GameWorld {
         }
     }
 
+    // Check if a circle at (px,py) with radius pr collides with any world object
     public boolean collidesCircle(double px, double py, double pr) {
         for (WorldObject obj : objects) {
 
@@ -119,6 +122,7 @@ public class GameWorld {
         return false;
     }
 
+    // Spawn static objects randomly in the world and avoid player start area
     private void spawnObjects() {
         Random r = new Random();
         
@@ -132,6 +136,7 @@ public class GameWorld {
 
             int spawnCount;
 
+            // Determine spawn count based on object size
             if (maxDim > 96) spawnCount = 1;
             else if (maxDim > 64) spawnCount = 4;
             else spawnCount = 15;

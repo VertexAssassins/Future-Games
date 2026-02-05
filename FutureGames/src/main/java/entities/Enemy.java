@@ -27,7 +27,7 @@ public class Enemy {
     private double chaseStrength;   // base chase force
 
     private double lastX, lastY;
-    private int stuckFrames = 0;
+    private int stuckFrames = 0; // counts frames of minimal movement to detect being stuck
 
     private double knockbackVX = 0;
     private double knockbackVY = 0;
@@ -43,7 +43,7 @@ public class Enemy {
     protected double baseSpeed;
     protected double baseDamage;
     protected double baseHealth;
-    protected long baseAttackCooldown; // default 1 second
+    protected long baseAttackCooldown;
     protected int basePoints;
 
     // Effective stats (after modifiers)
@@ -112,9 +112,10 @@ public class Enemy {
     }
 
     public double getColliderRadius() {
-        return size * 0.55; // 10% larger than half-size (0.5 * size * 1.1 = 0.55 * size)
+        return size * 0.55;
     }
 
+    // for modification application
     protected void applyGlobalModifiers(double speedMult, double damageMult, double healthMult, double cooldownMult, double pointsMult) {
         speed = baseSpeed * speedMult;
         damage = baseDamage * damageMult;
@@ -123,6 +124,7 @@ public class Enemy {
         points = (int)(basePoints * pointsMult);
     }
 
+    // attempt attacking the player if in range
     public void attemptAttack(Player player) {
     long now = System.currentTimeMillis();
     double dx = worldX - player.getX();
@@ -250,7 +252,7 @@ public class Enemy {
             double dist = Math.sqrt(dx*dx + dy*dy);
 
             if (dist > 0 && dist < desiredSpacing) {
-                double t = (desiredSpacing - dist) / desiredSpacing; // 0..1
+                double t = (desiredSpacing - dist) / desiredSpacing;
                 force.add(new Vector2(dx / dist, dy / dist).mul(t));
             }
         }
@@ -331,13 +333,13 @@ public class Enemy {
         double threshold = 0.25 * maxHealth;
         if (damage < threshold) return;
 
-        double scale = damage / threshold; // 1.0 = 25%, 2.0 = 50%, etc.
+        double scale = damage / threshold;
         double dx = worldX - sourceX;
         double dy = worldY - sourceY;
         double length = Math.sqrt(dx * dx + dy * dy);
         if (length == 0) return;
 
-        double knockbackStrength = 5.0 * scale; // tune this constant
+        double knockbackStrength = 5.0 * scale;
 
         knockbackVX = (dx / length) * knockbackStrength;
         knockbackVY = (dy / length) * knockbackStrength;

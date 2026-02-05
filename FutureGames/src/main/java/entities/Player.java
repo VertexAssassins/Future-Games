@@ -87,7 +87,7 @@ public class Player {
         recalcStats();
         health = maxHealth;   // start fully healed
 
-        points = PersistenceManager.load("points", 0) + 100000;
+        points = PersistenceManager.load("points", 0);
 
         loadAnimations();
         loadDashChargeFrames();
@@ -176,7 +176,6 @@ public class Player {
         speed = baseSpeed * speedMultiplier;
         maxHealth = baseHealth + maxHealthBonus;
 
-        // If max health increases, heal the player proportionally
         if (health > maxHealth) {
             health = maxHealth;
         }
@@ -348,15 +347,15 @@ public class Player {
 
             // Map elapsed time to 32 frames
             double progress = Math.min(1.0, (double) elapsed / chargeDuration);
-            dashChargeFrame = (int)(progress * 31); // 0–31
+            dashChargeFrame = (int)(progress * 31);
 
             // If animation finished AND a charge was restored, restart for next charge
             if (progress >= 1.0) {
-                playingChargeAnim = false; // will restart next update if still not full
+                playingChargeAnim = false;
             }
 
         } else {
-            // Fully charged → freeze on last frame
+            // Fully charged -> freeze on last frame
             playingChargeAnim = false;
             dashChargeFrame = 31;
         }
@@ -467,7 +466,7 @@ public class Player {
         case SMG -> "smg";
         case ASSAULTRIFLE -> "assaultrifle";
         case AUTOSHOTGUN -> "autoshotgun";
-        case LMG -> "lmg"; // or "minigun" if you rename folder
+        case LMG -> "lmg";
     };
 
     PlayerAnimationSet set = animationSets.get(key);
@@ -534,7 +533,7 @@ public class Player {
                 );
             }
 
-            // Tint overlay (also use w/h)
+            // Tint overlay
             if (hitOverlayAlpha > 0f) {
                 BufferedImage tinted = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D tg = tinted.createGraphics();
@@ -583,7 +582,7 @@ public class Player {
     }
 
     public double getColliderRadius() {
-        return size * 0.15; // or 0.55 if you want a slight buffer
+        return size * 0.15;
     }
 
     public void reset() {

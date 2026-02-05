@@ -38,6 +38,7 @@ public class GameLoop extends Thread {
         long timer = System.currentTimeMillis();
         double delta = 0.0;
         int frames = 0;
+        // Calculate nanoseconds per frame based on target FPS as nanoseconds are used for higher precision
         double nsPerFrame = 1_000_000_000.0 / TARGET_FPS;
 
         while (running) {
@@ -45,7 +46,7 @@ public class GameLoop extends Thread {
             double frameDelta = (now - lastTime) / nsPerFrame;
             lastTime = now;
 
-            // Only accumulate delta while actively playing
+            // Only accumulate delta while actively playing this allows pausing the game
             if (panel.getGameState() == GameState.PLAYING) {
                 delta += frameDelta;
             }

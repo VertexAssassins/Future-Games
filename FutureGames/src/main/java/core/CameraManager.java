@@ -10,6 +10,7 @@ public class CameraManager {
         this.player = player;
     }
 
+    // Get the X offset to center the camera on the player
     public int getOffsetX() {
         return (int) player.getX() - Constants.SCREEN_WIDTH / 2;
     }

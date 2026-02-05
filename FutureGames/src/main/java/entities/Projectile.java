@@ -100,7 +100,7 @@ public class Projectile {
             double nextX = currX + stepDx;
             double nextY = currY + stepDy;
 
-            // 1) Enemy collision (already there)
+            // 1) Enemy collision
             for (Enemy e : candidates) {
                 if (CollisionResolver.checkProjectileHit(this, e, currX, currY, nextX, nextY)) {
                     applyDamage(e, currX, currY);
@@ -108,7 +108,7 @@ public class Projectile {
                 }
             }
 
-            // 2) Object collision (new)
+            // 2) Object collision 
             if (world.collidesCircle(nextX, nextY, getRadius())) {
                 return false; // bullet hits object and stops
             }

@@ -35,6 +35,7 @@ public class ShopPanel {
         items.add(new ShopItem("lmg", "MINIGUN", 10000, 15000));
         items.add(new ShopItem(ShopItem.Type.SPECIAL,"biggerstick","The Bigger Stick", 50000));
 
+        // Load icons
         for (ShopItem item : items) {
             try {
                 URL url = getClass().getResource("/shopWeapons/" + item.weaponId + ".png");

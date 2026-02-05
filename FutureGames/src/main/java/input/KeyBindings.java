@@ -36,7 +36,7 @@ public class KeyBindings {
             }
         });
 
-        // Weapon switching keys — **moved inside the setup() method**
+        // Weapon switching keys (1-7)
         String[] weaponKeys = {"1", "2", "3", "4", "5", "6", "7"};
         for (int i = 0; i < weaponKeys.length; i++) {
             String key = weaponKeys[i];
@@ -64,7 +64,7 @@ public class KeyBindings {
         am.put("weapon_next", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                weaponSwitcher.switchWeapon(-2); // next (special code)
+                weaponSwitcher.switchWeapon(-2);
             }
         });
     }

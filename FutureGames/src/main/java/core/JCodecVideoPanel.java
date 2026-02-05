@@ -10,6 +10,10 @@ import java.util.List;
 import org.jcodec.api.awt.AWTFrameGrab;
 import org.jcodec.common.io.NIOUtils;
 
+/*---------------------------------
+REF: https://github.com/jcodec/jcodec
+----------------------------------- */
+
 public class JCodecVideoPanel extends JPanel implements Runnable {
 
     private final String videoPath;

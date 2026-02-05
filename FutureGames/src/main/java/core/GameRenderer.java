@@ -36,6 +36,7 @@ public class GameRenderer {
     public GameRenderer(GamePanel panel) {
         this.panel = panel;
 
+        // Load images
         cardWhite = new ImageIcon(getClass().getResource("/ui/Border Template White.png")).getImage();
         cardGreen = new ImageIcon(getClass().getResource("/ui/Border Template Green.png")).getImage();
         cardBlue  = new ImageIcon(getClass().getResource("/ui/Border Template Blue.png")).getImage();
@@ -47,15 +48,17 @@ public class GameRenderer {
         quitButtonImg  = new ImageIcon(getClass().getResource("/ui/Quit Button.png")).getImage();
         borderPanelImg = new ImageIcon(getClass().getResource("/ui/Border Template.png")).getImage();
 
-
         pauseResume = scale(pauseResume, 128, 128);
         pauseQuit   = scale(pauseQuit,   128, 128);
 
+        // Load custom font
         try {
             easyText = Font.createFont(
                     Font.TRUETYPE_FONT,
                     getClass().getResourceAsStream("/fonts/EASYTEXT.TTF")
             );
+            // Register the font with the graphics environment
+            // REF: https://docs.oracle.com/javase/8/docs/api/java/awt/GraphicsEnvironment.html
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(easyText);
         } catch (Exception e) {
@@ -64,9 +67,7 @@ public class GameRenderer {
         }
     }
 
-    // -------------------------
     // MAIN ENTRY POINT
-    // -------------------------
     public void render(Graphics g) {
         GameState state = panel.getGameState();
 
@@ -80,9 +81,7 @@ public class GameRenderer {
         }
     }
 
-    // -------------------------
     // GAMEPLAY RENDERING
-    // -------------------------
     private void drawGameplay(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
@@ -135,7 +134,7 @@ public class GameRenderer {
             b.render(g2, panel.getCamera());
         }
 
-        // 2. Snapshot enemies once
+        // 2. Snapshot enemies once (this is done to avoid concurrent modification issues)
         List<Enemy> snapshot = new ArrayList<>(panel.getEnemies());
 
         // 3. Draw enemies
@@ -156,9 +155,7 @@ public class GameRenderer {
         }
     }
 
-    // -------------------------
     // HUD (wave, points, health)
-    // -------------------------
     private void drawHUD(Graphics g) {
         g.setFont(easyText.deriveFont(Font.BOLD, 15f));
         g.setColor(Color.WHITE);
@@ -215,9 +212,7 @@ public class GameRenderer {
                     y + size - 10);
     }
 
-    // -------------------------
     // PAUSE MENU
-    // -------------------------
     private void drawPauseMenu(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
@@ -238,9 +233,7 @@ public class GameRenderer {
         // Background
         g2.drawImage(pauseBorder, x, y, panelW, panelH, null);
 
-        // -------------------------
         // TITLE
-        // -------------------------
         g2.setFont(easyText.deriveFont(Font.BOLD, 64f));
         g2.setColor(Color.WHITE);
 
@@ -251,10 +244,7 @@ public class GameRenderer {
 
         g2.drawString(title, titleX, titleY);
 
-        // -------------------------
         // BUTTONS (scaled)
-        // -------------------------
-
         int buttonSpacing = 110;   // more spacing for bigger buttons
         int buttonStartY = y + 120;
 
@@ -281,10 +271,7 @@ public class GameRenderer {
         );
         g2.drawImage(pauseQuit, quitRect.x, quitRect.y, btnW, btnH, null);
 
-        // -------------------------
         // SLIDERS (centered)
-        // -------------------------
-
         g2.setFont(easyText.deriveFont(Font.BOLD, 32f));
         g2.setColor(Color.WHITE);
 
@@ -327,9 +314,7 @@ public class GameRenderer {
         return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
     }
 
-    // -------------------------
     // CARD SELECTION SCREEN
-    // -------------------------
     private void drawCardSelection(Graphics g) {
         List<ModifierCard> cards = panel.getCurrentCards();
         if (cards == null || cards.size() != 3) return;
@@ -422,9 +407,7 @@ public class GameRenderer {
         };
     }
 
-    // -------------------------
     // GAME OVER SCREEN
-    // -------------------------
     private void drawGameOver(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         Player player = panel.getPlayer();
@@ -440,9 +423,7 @@ public class GameRenderer {
         // Draw panel background
         g2.drawImage(borderPanelImg, x, y, panelW, panelH, null);
 
-        // -------------------------
         // GAME OVER TITLE (centered)
-        // -------------------------
         String title = "Game Over";
         g2.setFont(easyText.deriveFont(Font.BOLD, 64f));
         g2.setColor(Color.WHITE);
@@ -453,9 +434,7 @@ public class GameRenderer {
 
         g2.drawString(title, titleX, titleY);
 
-        // -------------------------
         // FINAL SCORE (centered)
-        // -------------------------
         String scoreText = "Final Score: " + player.getPoints();
         g2.setFont(easyText.deriveFont(Font.BOLD, 32f));
         g2.setColor(Color.YELLOW);
@@ -466,9 +445,7 @@ public class GameRenderer {
 
         g2.drawString(scoreText, scoreX, scoreY);
 
-        // -------------------------
         // BUTTONS (centered inside panel)
-        // -------------------------
         int btnW = 350;
         int btnH = 150;
         int btnX = x + (panelW - btnW) / 2;
@@ -484,9 +461,7 @@ public class GameRenderer {
         g2.drawImage(quitButtonImg,  panel.quitButton.x,  panel.quitButton.y,  btnW, btnH, null);
     }
 
-    // -------------------------
     // SHOP SCREEN
-    // -------------------------
     private void drawShop(Graphics g) {
         panel.getShopPanel().draw(g, panel.getPlayer(), panel.getWidth(), panel.getHeight());
 
@@ -508,10 +483,8 @@ public class GameRenderer {
             null
         );
     }
-
-    // -------------------------
+    
     // DEBUG RENDERING
-    // -------------------------
     private void drawDebug(Graphics2D g2) {
         if (!panel.isDebugEnabled()) return;
 
@@ -549,9 +522,7 @@ public class GameRenderer {
         return String.format("%.2f", val);
     }
 
-    // -------------------------
     // BIG STICK ENDING
-    // -------------------------
     private void drawBigStickEnding(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         int w = panel.getWidth();
@@ -559,19 +530,5 @@ public class GameRenderer {
 
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, w, h);
-
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 40));
-
-        String line1 = "You chose The Bigger Stick.";
-        String line2 = "The world is ending...";
-
-        FontMetrics fm = g2.getFontMetrics();
-        int x1 = (w - fm.stringWidth(line1)) / 2;
-        int x2 = (w - fm.stringWidth(line2)) / 2;
-        int y = h / 2;
-
-        g2.drawString(line1, x1, y - 20);
-        g2.drawString(line2, x2, y + 30);
     }
 }

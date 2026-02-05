@@ -142,6 +142,7 @@ public class GamePanel extends JPanel {
     return Math.atan2(worldMouseY - player.getY(), worldMouseX - player.getX());
     }
 
+    // Weapon manager with all weapons initialized
     private final WeaponManager weaponManager = new WeaponManager(
         Map.of(
             WeaponType.PISTOL, new Pistol(this::spawnProjectile, player, world),
@@ -171,10 +172,10 @@ public class GamePanel extends JPanel {
 
         // Initialize pause menu UI
         resumeButton = new Rectangle(0, 0, 0, 0);       // will be positioned in paintComponent
-        pauseQuitButton = new Rectangle(0, 0, 0, 0);
+        pauseQuitButton = new Rectangle(0, 0, 0, 0);    // will be positioned in paintComponent
 
         musicSlider = new UISlider(0, 0, 200, 1.0f);    // default full volume
-        sfxSlider   = new UISlider(0, 0, 200, 1.0f);
+        sfxSlider   = new UISlider(0, 0, 200, 1.0f);    // default full volume
 
         setFocusable(true);
 
@@ -204,9 +205,11 @@ public class GamePanel extends JPanel {
             }
         });
 
+        // Unlock default weapon
         WeaponUnlockManager.unlock("pistol");
             KeyBindings.setup(this, player, index -> {
 
+            // Handle cycling weapons
             if (index == -1) {
                 cycleWeapon(-1); // previous
                 return;
@@ -335,12 +338,14 @@ public class GamePanel extends JPanel {
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
+            // Update player facing direction based on mouse movement
             @Override
             public void mouseMoved(MouseEvent e) {
                 mousePos = e.getPoint();
                 player.updateFacingDirection(mousePos.x);
             }
 
+            // Update player facing direction based on mouse drag
             @Override
                 public void mouseDragged(MouseEvent e) {
                     mousePos = e.getPoint();
@@ -364,6 +369,7 @@ public class GamePanel extends JPanel {
                 }
         });
 
+        // Handle mouse wheel for shop scrolling
         addMouseWheelListener(e -> {
             if (gameState == GameState.SHOP) {
                 shopPanel.handleScroll(e.getWheelRotation());
@@ -382,6 +388,7 @@ public class GamePanel extends JPanel {
     private void playCutscene() {
         gameState = GameState.BIG_STICK_ENDING;
 
+        // Clear existing components
         removeAll();
         setLayout(new BorderLayout());  // ensure CENTER works
         revalidate();
@@ -412,6 +419,7 @@ public class GamePanel extends JPanel {
         revalidate();
         repaint();
 
+        // Start video playback in a new thread
         new Thread(videoPanel).start();
     }
 
@@ -433,6 +441,7 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Try to switch to a specific weapon type if unlocked
     private void trySwitch(WeaponType type) {
         if (WeaponUnlockManager.isUnlocked(type.name().toLowerCase())) {
             weaponManager.switchTo(type);
@@ -448,6 +457,7 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Toggle between PAUSED and PLAYING states
     private void togglePause() {
         if (gameState == GameState.PLAYING) {
             gameState = GameState.PAUSED;
@@ -459,6 +469,7 @@ public class GamePanel extends JPanel {
     public void attemptShoot() {
     if (!mouseDown) return;
 
+    // Get aim angle
     double angle = getAimAngle();
     weaponManager.tryShoot(player.getX(), player.getY(), angle);
     }
@@ -474,6 +485,7 @@ public class GamePanel extends JPanel {
         applyModifier(card.bad);
     }
 
+    // Apply a single modifier to the player or global enemy stats
     private void applyModifier(Modifier m) {
         switch (m.type) {
             case DAMAGE_MULT -> player.damageMultiplier += m.value / 100.0;
@@ -540,9 +552,7 @@ public class GamePanel extends JPanel {
         // Reset game state
         gameState = GameState.PLAYING;
 
-        // -------------------------
         // RESET PLAYER MODIFIERS
-        // -------------------------
         player.damageMultiplier = 1.0;
         player.speedMultiplier = 1.0;
         player.pointsMultiplier = 1.0;
@@ -552,25 +562,19 @@ public class GamePanel extends JPanel {
         player.health = player.maxHealth;
         player.setPosition(300, 200);
 
-        // -------------------------
         // RESET ENEMY GLOBAL MODIFIERS
-        // -------------------------
         Enemy.GLOBAL_SPEED_MULT = 1.0;
         Enemy.GLOBAL_DAMAGE_MULT = 1.0;
         Enemy.GLOBAL_HEALTH_MULT = 1.0;
         Enemy.GLOBAL_COOLDOWN_MULT = 1.0;
         Enemy.GLOBAL_POINTS_MULT = 1.0;
 
-        // -------------------------
         // CLEAR ENTITIES
-        // -------------------------
         synchronized (enemies) { enemies.clear(); }
         synchronized (projectiles) { projectiles.clear(); }
         healthPickups.clear();
 
-        // -------------------------
         // RESET WEAPONS
-        // -------------------------
         for (Weapon w : weaponManager.getAllWeapons()) {
             w.resetStatsToBase();   // you'll add this method
         }
@@ -580,9 +584,7 @@ public class GamePanel extends JPanel {
         weaponManager.switchTo(WeaponType.PISTOL);
         player.setWeaponAnimation(WeaponType.PISTOL);
 
-        // -------------------------
         // RESET WAVES
-        // -------------------------
         waveManager.reset();
         waveManager.advanceWave(); // start Wave 1
     }
